@@ -3,7 +3,8 @@
 [![Build Status](https://travis-ci.com/razee-io/RemoteResource.svg?branch=master)](https://travis-ci.com/razee-io/RemoteResource)
 ![GitHub](https://img.shields.io/github/license/razee-io/RemoteResource.svg?color=success)
 
-RemoteResource is the foundation for implementing continuous deployment with kapitan. It retrieves and applies the configuration for all resources.
+RemoteResource is the foundation for implementing continuous deployment with kapitan. 
+It retrieves and applies the configuration for all resources.
 
 ## Install
 
