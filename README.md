@@ -33,16 +33,8 @@ spec:
         url: http://<source_repo_url>/<file_name2>
 ```
 
-#### Fields:
+#### Required Fields:
 
-- `.metadata.labels[kapitan.razee.io/Reconcile]`
-  - required: false
-  - type: string
-  - default: 'true'
-- `.metadata.labels[kapitan.razee.io/mode]`
-  - required: false
-  - type: string
-  - default: 'MergePatch'
 - `.spec.requests`
   - required: true
   - type: array
@@ -52,6 +44,17 @@ spec:
 - `.spec.requests.url` or `.spec.requests.uri`
   - required: true
   - type: string
+
+#### Optional Fields:
+
+- `.metadata.labels[kapitan.razee.io/Reconcile]`
+  - required: false
+  - type: string
+  - default: 'true'
+- `.metadata.labels[kapitan.razee.io/mode]`
+  - required: false
+  - type: string
+  - default: 'MergePatch'
 - `.spec.requests.optional`
   - required: false
   - type: boolean
@@ -59,7 +62,29 @@ spec:
 
 ## Features
 
+### Request Options
+
+`.spec.requests.options`
+
+All options defined in an options object will be passed as is to the http request.
+This means you can specify things like headers for authentication in this section. See
+[RemoteResourceS3](https://github.com/razee-io/RemoteResourceS3) for
+authenticating with an S3 object store.
+
+### Optional Request
+
+`.spec.requests.optional`
+
+- DEFAULT: `false`
+  - if download or applying child resource fails, RemoteResource will stop
+  execution and report error to `.status`.
+- `true`
+  - if download or applying child resource fails, RemoteResource will continue
+  processing the rest of the defined requests, and will report a warning to `.status`.
+
 ### Reconcile
+
+`.metadata.labels[kapitan.razee.io/Reconcile]`
 
 A kapitan resource (parent) will clean up a resources it applies (child) when
 either the child is no longer in the parent resource definition or the parent is deleted.
@@ -67,6 +92,8 @@ This behavior can be overridden when a child's resource definition has the label
 `kapitan.razee.io/Reconcile=false`.
 
 ### Resource Update Mode
+
+`.metadata.labels[kapitan.razee.io/mode]`
 
 Kapitan resources default to merge patching children. This behavior can be
 overridden when a child's resource definition has the label
