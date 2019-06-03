@@ -13,7 +13,7 @@ kubectl apply -f "https://github.com/razee-io/RemoteResource/releases/latest/dow
 
 ## Resource Definition
 
-### Sample:
+### Sample
 
 ```yaml
 apiVersion: "kapitan.razee.io/v1alpha1"
@@ -33,7 +33,7 @@ spec:
         url: http://<source_repo_url>/<file_name2>
 ```
 
-### Required Fields:
+### Required Fields
 
 - `.spec.requests`
   - required: true
@@ -45,7 +45,7 @@ spec:
   - required: true
   - type: string
 
-### Optional Fields:
+### Optional Fields
 
 - `.metadata.labels[kapitan.razee.io/Reconcile]`
   - required: false
@@ -100,6 +100,7 @@ overridden when a child's resource definition has the label
 `kapitan.razee.io/mode=<mode>`
 
 Mode options:
+
 - DEFAULT: `MergePatch`
   - A simple merge, that will merge objects and replace arrays. Items previously defined, then removed from the definition, will be removed from the live resource.
   - "As defined in [RFC7386](https://tools.ietf.org/html/rfc7386), a Merge Patch is essentially a partial representation of the resource. The submitted JSON is "merged" with the current resource to create a new one, then the new one is saved. For more details on how to use Merge Patch, see the RFC." [Reference](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#patch-operations)
