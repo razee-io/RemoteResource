@@ -13,7 +13,7 @@ kubectl apply -f "https://github.com/razee-io/RemoteResource/releases/latest/dow
 
 ## Resource Definition
 
-#### Sample:
+### Sample:
 
 ```yaml
 apiVersion: "kapitan.razee.io/v1alpha1"
@@ -33,7 +33,7 @@ spec:
         url: http://<source_repo_url>/<file_name2>
 ```
 
-#### Required Fields:
+### Required Fields:
 
 - `.spec.requests`
   - required: true
@@ -45,7 +45,7 @@ spec:
   - required: true
   - type: string
 
-#### Optional Fields:
+### Optional Fields:
 
 - `.metadata.labels[kapitan.razee.io/Reconcile]`
   - required: false
