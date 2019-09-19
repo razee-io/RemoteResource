@@ -17,12 +17,12 @@
 const request = require('request-promise-native');
 const clone = require('clone');
 
-const { BaseDownloadController } = require('@razee/kapitan-core');
+const { BaseDownloadController } = require('@razee/razeedeploy-core');
 
 
 module.exports = class RemoteResourceController extends BaseDownloadController {
   constructor(params) {
-    params.finalizerString = params.finalizerString || 'children.remoteresource.kapitan.razee.io';
+    params.finalizerString = params.finalizerString || 'children.remoteresource.deploy.razee.io';
     super(params);
   }
 

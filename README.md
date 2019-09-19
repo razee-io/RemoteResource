@@ -5,7 +5,7 @@
 ![GitHub](https://img.shields.io/github/license/razee-io/RemoteResource.svg?color=success)
 
 RemoteResource is the foundation for implementing continuous deployment with
-kapitan. It retrieves and applies the configuration for all resources.
+razeedeploy. It retrieves and applies the configuration for all resources.
 
 ## Install
 
@@ -18,7 +18,7 @@ kubectl apply -f "https://github.com/razee-io/RemoteResource/releases/latest/dow
 ### Sample
 
 ```yaml
-apiVersion: "kapitan.razee.io/v1alpha1"
+apiVersion: "deploy.razee.io/v1alpha1"
 kind: RemoteResource
 metadata:
   name: <remote_resource_name>
@@ -80,23 +80,23 @@ authenticating with an S3 object store.
 
 #### Reconcile
 
-Child resource: `.metadata.labels[kapitan.razee.io/Reconcile]`
+Child resource: `.metadata.labels[deploy.razee.io/Reconcile]`
 
 - DEFAULT: `true`
-  - A kapitan resource (parent) will clean up a resources it applies (child) when
-either the child is no longer in the parent resource definition or the parent is
-deleted.
+  - A razeedeploy resource (parent) will clean up a resources it applies (child)
+when either the child is no longer in the parent resource definition or the
+parent is deleted.
 - `false`
   - This behavior can be overridden when a child's resource definition has
-the label `kapitan.razee.io/Reconcile=false`.
+the label `deploy.razee.io/Reconcile=false`.
 
 #### Resource Update Mode
 
-Child resource: `.metadata.labels[kapitan.razee.io/mode]`
+Child resource: `.metadata.labels[deploy.razee.io/mode]`
 
-Kapitan resources default to merge patching children. This behavior can be
+Razeedeploy resources default to merge patching children. This behavior can be
 overridden when a child's resource definition has the label
-`kapitan.razee.io/mode=<mode>`
+`deploy.razee.io/mode=<mode>`
 
 Mode options:
 
@@ -121,25 +121,25 @@ Mode options:
 
 ### Debug Individual Resource
 
-`.spec.resources.metadata.labels[kapitan.razee.io/debug]`
+`.spec.resources.metadata.labels[deploy.razee.io/debug]`
 
-Treats the live resource as EnsureExist. If any Kapitan component is enforcing
-the resource, and the label `kapitan.razee.io/debug: true` exists on the live
+Treats the live resource as EnsureExist. If any razeedeploy component is enforcing
+the resource, and the label `deploy.razee.io/debug: true` exists on the live
 resource, it will treat the resource as ensure exist and not override any changes.
-This is useful for when you need to debug a live resource and dont want Kapitan
+This is useful for when you need to debug a live resource and don't want razeedeploy
 overriding your changes. Note: this will only work when you add it to live resources.
 If you want to have the EnsureExist behavior, see [Resource Update Mode](#Resource-Update-Mode).
 
-- ie: `kubectl label rr <your-rr> kapitan.razee.io/debug=true`
+- ie: `kubectl label rr <your-rr> deploy.razee.io/debug=true`
 
 ### Lock Cluster Updates
 
 Prevents the controller from updating resources on the cluster. If this is the
-first time creating the `kapitan-config` ConfigMap, you must delete the running
+first time creating the `razeedeploy-config` ConfigMap, you must delete the running
 controller pods so the deployment can mount the ConfigMap as a volume. If the
-`kapitan-config` ConfigMap already exists, just add the pair `lock-cluster: true`.
+`razeedeploy-config` ConfigMap already exists, just add the pair `lock-cluster: true`.
 
 1. `export CONTROLLER_NAME=remoteresource-controller && export CONTROLLER_NAMESPACE=razee`
-1. `kubectl create cm kapitan-config -n $CONTROLLER_NAMESPACE --from-literal=lock-cluster=true`
+1. `kubectl create cm razeedeploy-config -n $CONTROLLER_NAMESPACE --from-literal=lock-cluster=true`
 1. `kubectl delete pods -n $CONTROLLER_NAMESPACE $(kubectl get pods -n $CONTROLLER_NAMESPACE
  | grep $CONTROLLER_NAME | awk '{print $1}' | paste -s -d ',' -)`
