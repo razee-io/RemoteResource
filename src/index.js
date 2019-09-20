@@ -22,7 +22,7 @@ const log = require('./bunyan-api').createLogger(ControllerString);
 
 async function createClassicEventHandler(kc) {
   let result;
-  let resourceMeta = await kc.getKubeResourceMeta('deploy.razee.io/v1alpha1', ControllerString, 'watch');
+  let resourceMeta = await kc.getKubeResourceMeta('kapitan.razee.io/v1alpha1', ControllerString, 'watch');
   if (resourceMeta) {
     const Controller = require(`./${ControllerString}Controller`);
     let params = {
