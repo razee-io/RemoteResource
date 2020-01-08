@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/razee-io/RemoteResource.svg?branch=master)](https://travis-ci.com/razee-io/RemoteResource)
 ![GitHub](https://img.shields.io/github/license/razee-io/RemoteResource.svg?color=success)
-[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=razee-io/razeedeploy-core)](https://dependabot.com)
+[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=razee-io/RemoteResource)](https://dependabot.com)
 
 RemoteResource is the foundation for implementing continuous deployment with
 razeedeploy. It retrieves and applies the configuration for all resources.
