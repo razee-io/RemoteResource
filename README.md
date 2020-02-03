@@ -18,7 +18,7 @@ kubectl apply -f "https://github.com/razee-io/RemoteResource/releases/latest/dow
 ### Sample
 
 ```yaml
-apiVersion: "deploy.razee.io/v1alpha1"
+apiVersion: "deploy.razee.io/v1alpha2"
 kind: RemoteResource
 metadata:
   name: <remote_resource_name>
@@ -35,46 +35,69 @@ spec:
         url: http://<source_repo_url>/<file_name2>
 ```
 
-### Required Fields
+### Spec
 
-- `.spec.requests`
-  - type: array
-  - items:
-    - type: object
-    - required: [[options](#Options)]
-    - optional: [[optional](#Optional)]
+**Path:** `.spec`
 
-## Features
+**Description:** `spec` is required and **must** include section `requests`.
 
-### Requests
+**Schema:**
 
-#### Options
+```yaml
+spec:
+  type: object
+  required: [requests]
+  properties:
+    requests:
+      type: array
+      ...
+```
 
-`.spec.requests.options`
+### Request Options
 
-All options defined in an options object will be passed as is to the http request.
-This means you can specify things like headers for authentication in this section.
-See [RemoteResourceS3](https://github.com/razee-io/RemoteResourceS3) for
-authenticating with an S3 object store.
+**Path:** `.spec.requests[].options`
 
-- Schema:
-  - type: object
-  - required: [url || uri]
-  - optional: [any other other options to be passed along with the request]
+**Description:** All options defined in an options object will be passed as-is
+to the http request. This means you can specify things like headers for
+authentication in this section. See [RemoteResourceS3](https://github.com/razee-io/RemoteResourceS3)
+for authenticating with an S3 object store.
 
-#### Optional
+**Schema:**
 
-`.spec.requests.optional`
+```yaml
+options:
+  type: object
+  oneOf:
+    - required: [url]
+    - required: [uri]
+  properties:
+    url:
+      type: string
+      format: uri
+    uri:
+      type: string
+      format: uri
+    headers:
+      type: object
+      x-kubernetes-preserve-unknown-fields: true
+```
 
-- DEFAULT: `false`
-  - if download or applying child resource fails, RemoteResource will stop
-  execution and report error to `.status`.
-- `true`
-  - if download or applying child resource fails, RemoteResource will continue
-  processing the rest of the defined requests, and will report a warning to `.status`.
+### Optional Request
 
-- Schema:
-  - type: boolean
+**Path:** `.spec.requests[].optional`
+
+**Description:** if download or applying child resource fails, RemoteResource
+will stop execution and report error to `.status`. You can allow execution to
+continue by marking a reference as optional.
+
+**Schema:**
+
+```yaml
+optional:
+  type: boolean
+```
+
+**Default:** `false`
 
 ### Managed Resource Labels
 
