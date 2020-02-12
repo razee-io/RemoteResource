@@ -62,5 +62,4 @@ typings/
 
 ########### Custom ignores ###########
 dev/
-test.js
-rr-test.yaml
+download-cache/
