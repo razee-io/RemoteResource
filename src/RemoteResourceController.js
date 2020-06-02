@@ -16,14 +16,57 @@
 
 const request = require('request-promise-native');
 const clone = require('clone');
+const objectPath = require('object-path');
 
 const { BaseDownloadController } = require('@razee/razeedeploy-core');
-
 
 module.exports = class RemoteResourceController extends BaseDownloadController {
   constructor(params) {
     params.finalizerString = params.finalizerString || 'children.remoteresource.deploy.razee.io';
     super(params);
+  }
+
+  async added() {
+    let requests = objectPath.get(this.data, ['object', 'spec', 'requests'], []);
+    let newRequests = [];
+    for (let i = 0; i < requests.length; i++) {
+      let r = requests[i];
+      let headers = objectPath.get(r, 'options.headers');
+      if (headers) {
+        let headerKeysList = Object.keys(headers);
+        for (let j = 0; j < headerKeysList.length; j++) {
+          let headerName = headerKeysList[j];
+          let headerObject = headers[headerName];
+          let secretRef = objectPath.get(headerObject, 'valueFrom.secretKeyRef');
+          if (secretRef) {
+            let secretValue = await this._fetchHeaderSecret(secretRef);
+            headers[headerName] = secretValue;
+          }
+        }
+        objectPath.set(r, 'options.headers', headers);
+      }
+      newRequests.push(r);
+    }
+    objectPath.set(this.data, ['object', 'spec', 'requests'], newRequests);
+    let result = await super.added();
+    return result;
+  }
+
+  async _fetchHeaderSecret(secretKeyRef) {
+    let secretName = objectPath.get(secretKeyRef, 'name');
+    let secretNamespace = objectPath.get(secretKeyRef, 'namespace', this.namespace);
+    let secretKey = objectPath.get(secretKeyRef, 'key');
+    let secretValue = await this._getSecretData(secretName, secretKey, secretNamespace);
+    if (!secretValue) {
+      throw Error('Unable to get secret data');
+    }
+    return secretValue;
+  }
+
+  async _getSecretData(name, key, ns) {
+    let res = await this.kubeResourceMeta.request({ uri: `/api/v1/namespaces/${ns || this.namespace}/secrets/${name}`, json: true });
+    let apiKey = Buffer.from(objectPath.get(res, ['data', key], ''), 'base64').toString();
+    return apiKey;
   }
 
   async download(reqOpt) {
