@@ -30,6 +30,12 @@ spec:
         headers:
           <header_key1>: <header_value1>
           <header_key2>: <header_value2>
+          <header_key3>:
+            valueFrom:
+              secretKeyRef:
+                name: <name of secret resource>
+                namespace: <namespace of secret resource>
+                key: <key in secret>
     - optional: true
       options:
         url: http://<source_repo_url>/<file_name2>
