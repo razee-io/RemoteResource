@@ -15,13 +15,14 @@
     "test": "nyc --reporter=html --all --reporter=text mocha ",
     "test:debug": "mocha --inspect-brk",
     "check-coverage": "nyc check-coverage --statements 0 --branches 0 --functions 0 --lines 0",
-    "lint": "npx npm-run-all eslint yamllint markdownlint yaml-lint",
+    "lint": "npx npm-run-all eslint markdownlint yaml-lint jsonlint shellcheck",
     "eslint": "npx eslint src/",
-    "yamllint": "npx yamllint .travis.yml kubernetes/RemoteResource/resource.yaml",
     "markdownlint": "npx markdownlint README.md docs/",
     "dockerlint": "npx dockerlint Dockerfile",
     "commit": "git-cz",
-    "yaml-lint": "npx yaml-lint kubernetes/RemoteResource/resource.yaml"
+    "yaml-lint": "npx yaml-lint .travis.yml kubernetes/RemoteResource/resource.yaml",
+    "jsonlint": "npx jsonlint --quiet build/viewTemplate.json",
+    "shellcheck": "npx shellcheck build/*.sh"
   },
   "repository": {
     "type": "git",
