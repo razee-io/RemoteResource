@@ -84,7 +84,7 @@ function createEventListeners() {
 
 async function run() {
   try {
-    createEventListeners()
+    createEventListeners();
     await main();
   } catch (error) {
     log.error(error);
