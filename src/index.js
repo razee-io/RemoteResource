@@ -18,13 +18,13 @@ const { EventHandler, KubeClass, KubeApiConfig } = require('@razee/kubernetes-ut
 const kubeApiConfig = KubeApiConfig();
 
 const ControllerString = 'RemoteResource';
+const Controller = require(`./${ControllerString}Controller`);
 const log = require('./bunyan-api').createLogger(ControllerString);
 
 async function createClassicEventHandler(kc) {
   let result;
   let resourceMeta = await kc.getKubeResourceMeta('kapitan.razee.io/v1alpha1', ControllerString, 'watch');
   if (resourceMeta) {
-    const Controller = require(`./${ControllerString}Controller`);
     let params = {
       kubeResourceMeta: resourceMeta,
       factory: Controller,
@@ -45,7 +45,6 @@ async function createNewEventHandler(kc) {
   let result;
   let resourceMeta = await kc.getKubeResourceMeta('deploy.razee.io/v1alpha1', ControllerString, 'watch');
   if (resourceMeta) {
-    const Controller = require(`./${ControllerString}Controller`);
     let params = {
       kubeResourceMeta: resourceMeta,
       factory: Controller,
@@ -70,4 +69,16 @@ async function main() {
   return eventHandlers;
 }
 
-main().catch(e => log.error(e));
+async function run() {
+  try {
+    await main();
+  } catch (error) {
+    log.error(error);
+  }
+
+}
+
+module.exports = {
+  run,
+  RemoteResourceController: Controller
+};

@@ -1,8 +1,9 @@
 {
   "name": "RemoteResource",
   "version": "0.0.0-dev",
-  "description": "Kapitan: component to download and manage files",
-  "main": "index.js",
+  "description": "RazeeDeploy: component to download and manage files",
+  "main": "./src/index.js",
+  "bin": "./bin/remoteresource",
   "keywords": [
     "kubernetes",
     "razee",
