@@ -69,8 +69,22 @@ async function main() {
   return eventHandlers;
 }
 
+function createEventListeners() {
+  process.on('SIGTERM', () => {
+    log.info('recieved SIGTERM');
+  });
+  process.on('unhandledRejection', (reason, promise) => {
+    log.error('recieved unhandledRejection', reason);
+  });
+  process.on('beforeExit', (code) => {
+    log.info(`No work found. exiting with code: ${code}`);
+  });
+
+}
+
 async function run() {
   try {
+    createEventListeners()
     await main();
   } catch (error) {
     log.error(error);
