@@ -71,9 +71,9 @@ async function main() {
 
 function createEventListeners() {
   process.on('SIGTERM', () => {
-    log.info('recieved SIGTERM');
+    log.info('recieved SIGTERM. not handling at this time.');
   });
-  process.on('unhandledRejection', (reason, promise) => {
+  process.on('unhandledRejection', (reason) => {
     log.error('recieved unhandledRejection', reason);
   });
   process.on('beforeExit', (code) => {
