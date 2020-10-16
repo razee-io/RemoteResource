@@ -1,5 +1,5 @@
 {
-  "name": "RemoteResource",
+  "name": "@razee/remoteresource",
   "version": "0.0.0-dev",
   "description": "RazeeDeploy: component to download and manage files",
   "main": "./src/index.js",
