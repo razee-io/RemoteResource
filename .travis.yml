@@ -14,7 +14,7 @@ script:
   - if [ -n "${TRAVIS_TAG}" ]; then docker tag quay.io/razee/remoteresource:${TRAVIS_COMMIT} quay.io/razee/remoteresource:${TRAVIS_TAG}; fi
   - docker images
   - ./build/process-template.sh kubernetes/RemoteResource/resource.yaml >/tmp/resource.yaml
-  - if [[ $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then npm version --no-git-tag-version "${TRAVIS_TAG}"; fi
+  - if [[ "${TRAVIS_TAG}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then npm version --no-git-tag-version "${TRAVIS_TAG}"; fi
 
 before_deploy:
   - docker login -u="${QUAY_ID}" -p="${QUAY_TOKEN}" quay.io
