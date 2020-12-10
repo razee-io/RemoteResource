@@ -5,8 +5,8 @@ on:
     types: [prereleased]
     
 env:
-  USERNAME: "tasneem067"
-  PASSWORD: "f0xE2JPvnV/UpawCtl+4W2piDkn9L6isYEQMkjQi9S/Tx6Yb1YwYV0XO2F+XrBut"
+  USERNAME: ${{secrets.QUSERNAME}}
+  PASSWORD: ${{secrets.QPASSWORD}}
 
 jobs:
 
