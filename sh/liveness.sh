@@ -19,7 +19,7 @@ HEALTH_FILE=/tmp/liveness
 AGE=${1:-'5'} #Default 5 minutes
 
 findFile=$(find "${HEALTH_FILE}" -mmin "-${AGE}" 2>/dev/null)
-if [ $? -ne 0 ]; then
+if [ ${HEALTH_FILE} -ne 0 ]; then
   echo "FAILING liveness probe. ${HEALTH_FILE} does not exist."
   exit 1
 elif [ "${findFile}" = "" ]; then
