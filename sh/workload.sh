@@ -5,7 +5,7 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-#
+# 
 #      http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
@@ -16,17 +16,8 @@
 ################################################################################
 
 HEALTH_FILE=/tmp/liveness
-AGE=${1:-'5'} #Default 5 minutes
+touch "${HEALTH_FILE}"
 
-findFile=$(find "${HEALTH_FILE}" -mmin "-${AGE}" 2>/dev/null)
-if [ $? -ne 0 ]; then
-  echo "FAILING liveness probe. ${HEALTH_FILE} does not exist." 
-  exit 1
-elif [ "${findFile}" = "" ]; then
-  echo "FAILING liveness probe. ${HEALTH_FILE} has not been touched in ${AGE} minutes."
-  exit 1
-else
-  # echo "file is good"
-  exit 0
-fi
+sleep 3600
+
 
