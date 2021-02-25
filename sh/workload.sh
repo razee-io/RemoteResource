@@ -16,7 +16,8 @@
 ################################################################################
 
 HEALTH_FILE=/tmp/liveness
-touch "${HEALTH_FILE}"
+touch "${HEALTH_FILE}" 
+echo "touched"
 
 sleep 3600
 

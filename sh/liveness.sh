@@ -16,7 +16,7 @@
 ################################################################################
 
 HEALTH_FILE=/tmp/liveness
-AGE=${1:-'5'} #Default 5 minutes
+AGE=${1:-'1'} #Default 5 minutes
 
 findFile=$(find "${HEALTH_FILE}" -mmin "-${AGE}" 2>/dev/null)
 if [ $? -ne 0 ]; then

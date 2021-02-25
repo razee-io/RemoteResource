@@ -1,18 +1,25 @@
 
-apiVersion: batch/v1
-kind: Job
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: prince
 spec:
+  selector:
+    matchLabels:
+      app: razee
   template:
     metadata:
       name: prince
+      labels:
+        app: razee
     spec:
       containers:
       - name: prince
-        image: razee:latest
+        image: nderibe/razee3:latest
+        imagePullPolicy: Never
         livenessProbe:
           exec:
             command:
               - sh/liveness.sh
-      restartPolicy: Neverkube
+      restartPolicy: Always
+      
