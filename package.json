@@ -42,8 +42,8 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@razee/kubernetes-util": "0.2.2",
-    "@razee/razeedeploy-core": "0.11.5",
+    "@razee/kubernetes-util": "^0.2.3",
+    "@razee/razeedeploy-core": "^0.11.6",
     "bunyan": "^1.8.15",
     "clone": "^2.1.2",
     "request-promise-native": "^1.0.9"
