@@ -1,0 +1,23 @@
+name: Build and Test Prerelease
+
+on:
+  release:
+    types: [prereleased]
+    
+env:
+  USERNAME: ${{secrets.QUSERNAME}}
+  PASSWORD: ${{secrets.QPASSWORD}}
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the Docker image
+      run: |
+        docker build . --file Dockerfile --rm -t "quay.io/razee/remoteresource:${GITHUB_SHA}"
+        docker login -u="${USERNAME}" -p="${PASSWORD}" quay.io
+        docker push "quay.io/razee/remoteresource:${GITHUB_SHA}"
