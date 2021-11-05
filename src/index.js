@@ -18,32 +18,12 @@ const { EventHandler, KubeClass, KubeApiConfig } = require('@razee/kubernetes-ut
 const kubeApiConfig = KubeApiConfig();
 
 const ControllerString = 'RemoteResource';
-const Controller = require(`./${ControllerString}Controller`);
+const Controller = require('./BackendServiceFactory');
 const log = require('./bunyan-api').createLogger(ControllerString);
-
-async function createClassicEventHandler(kc) {
-  let result;
-  let resourceMeta = await kc.getKubeResourceMeta('kapitan.razee.io/v1alpha1', ControllerString, 'watch');
-  if (resourceMeta) {
-    let params = {
-      kubeResourceMeta: resourceMeta,
-      factory: Controller,
-      kubeClass: kc,
-      logger: log,
-      requestOptions: { qs: { timeoutSeconds: process.env.CRD_WATCH_TIMEOUT_SECONDS || 300 } },
-      livenessInterval: true,
-      finalizerString: 'client.featureflagset.kapitan.razee.io'
-    };
-    result = new EventHandler(params);
-  } else {
-    log.info(`Unable to find KubeResourceMeta for kapitan.razee.io/v1alpha1: ${ControllerString}`);
-  }
-  return result;
-}
 
 async function createNewEventHandler(kc) {
   let result;
-  let resourceMeta = await kc.getKubeResourceMeta('deploy.razee.io/v1alpha1', ControllerString, 'watch');
+  let resourceMeta = await kc.getKubeResourceMeta('deploy.razee.io/v1alpha2', ControllerString, 'watch');
   if (resourceMeta) {
     let params = {
       kubeResourceMeta: resourceMeta,
@@ -55,16 +35,14 @@ async function createNewEventHandler(kc) {
     };
     result = new EventHandler(params);
   } else {
-    log.error(`Unable to find KubeResourceMeta for deploy.razee.io/v1alpha1: ${ControllerString}`);
+    log.error(`Unable to find KubeResourceMeta for deploy.razee.io/v1alpha2: ${ControllerString}`);
   }
   return result;
 }
 
 async function main() {
-  log.info(`Running ${ControllerString}Controller.`);
   const kc = new KubeClass(kubeApiConfig);
   const eventHandlers = [];
-  eventHandlers.push(createClassicEventHandler(kc));
   eventHandlers.push(createNewEventHandler(kc));
   return eventHandlers;
 }
@@ -93,6 +71,5 @@ async function run() {
 }
 
 module.exports = {
-  run,
-  RemoteResourceController: Controller
+  run
 };

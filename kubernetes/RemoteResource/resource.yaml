@@ -6,79 +6,79 @@ metadata:
     version: "{{{TRAVIS_COMMIT}}}"
 type: array
 items:
-  - apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: remoteresource-controller
-      annotations:
-        razee.io/git-repo: "{{{GIT_REMOTE}}}"
-        razee.io/commit-sha: "{{{TRAVIS_COMMIT}}}"
-      labels:
-        razee/watch-resource: "lite"
-    spec:
-      replicas: 1
-      selector:
-        matchLabels:
-          app: remoteresource-controller
-      strategy:
-        type: RollingUpdate
-      template:
-        metadata:
-          labels:
-            app: remoteresource-controller
-            razee/watch-resource: "lite"
-          name: remoteresource-controller
-        spec:
-          serviceAccountName: razeedeploy-sa
-          securityContext:
-            runAsUser: {{{NODE_USER_ID}}}
-            runAsGroup: {{{NODE_GROUP_ID}}}
-            fsGroup: {{{NODE_GROUP_ID}}}
-          containers:
-            - image: "quay.io/razee/remoteresource:{{{TRAVIS_TAG}}}"
-              resources:
-                limits:
-                  memory: 200Mi
-                  cpu: 100m
-                requests:
-                  memory: 75Mi
-                  cpu: 40m
-              env:
-                - name: USER_AGENT_NAME
-                  value: razee-io/remoteresource
-                - name: USER_AGENT_VERSION
-                  value: "{{{TRAVIS_TAG}}}"
-                - name: CRD_WATCH_TIMEOUT_SECONDS
-                  valueFrom:
-                    configMapKeyRef:
-                      name: razeedeploy-overrides
-                      key: CRD_WATCH_TIMEOUT_SECONDS
-                      optional: true
-              imagePullPolicy: Always
-              name: remoteresource-controller
-              livenessProbe:
-                exec:
-                  command:
-                    - sh/liveness.sh
-                initialDelaySeconds: 30
-                periodSeconds: 150
-                timeoutSeconds: 30
-                failureThreshold: 1
-              volumeMounts:
-                - mountPath: /home/node/download-cache
-                  name: cache-volume
-                - mountPath: /home/node/config
-                  name: razeedeploy-config
-          volumes:
-            - name: cache-volume
-              emptyDir: {}
-            - name: razeedeploy-config
-              configMap:
-                name: razeedeploy-config
-                defaultMode: 400
-                optional: true
+  # - apiVersion: apps/v1
+  #   kind: Deployment
+  #   metadata:
+  #     name: remoteresource-controller
+  #     annotations:
+  #       razee.io/git-repo: "{{{GIT_REMOTE}}}"
+  #       razee.io/commit-sha: "{{{TRAVIS_COMMIT}}}"
+  #     labels:
+  #       razee/watch-resource: "lite"
+  #   spec:
+  #     replicas: 1
+  #     selector:
+  #       matchLabels:
+  #         app: remoteresource-controller
+  #     strategy:
+  #       type: RollingUpdate
+  #     template:
+  #       metadata:
+  #         labels:
+  #           app: remoteresource-controller
+  #           razee/watch-resource: "lite"
+  #         name: remoteresource-controller
+  #       spec:
+  #         serviceAccountName: razeedeploy-sa
+  #         securityContext:
+  #           runAsUser: {{{NODE_USER_ID}}}
+  #           runAsGroup: {{{NODE_GROUP_ID}}}
+  #           fsGroup: {{{NODE_GROUP_ID}}}
+  #         containers:
+  #           - image: "quay.io/razee/remoteresource:{{{TRAVIS_TAG}}}"
+  #             resources:
+  #               limits:
+  #                 memory: 200Mi
+  #                 cpu: 100m
+  #               requests:
+  #                 memory: 75Mi
+  #                 cpu: 40m
+  #             env:
+  #               - name: USER_AGENT_NAME
+  #                 value: razee-io/remoteresource
+  #               - name: USER_AGENT_VERSION
+  #                 value: "{{{TRAVIS_TAG}}}"
+  #               - name: CRD_WATCH_TIMEOUT_SECONDS
+  #                 valueFrom:
+  #                   configMapKeyRef:
+  #                     name: razeedeploy-overrides
+  #                     key: CRD_WATCH_TIMEOUT_SECONDS
+  #                     optional: true
+  #             imagePullPolicy: Always
+  #             name: remoteresource-controller
+  #             livenessProbe:
+  #               exec:
+  #                 command:
+  #                   - sh/liveness.sh
+  #               initialDelaySeconds: 30
+  #               periodSeconds: 150
+  #               timeoutSeconds: 30
+  #               failureThreshold: 1
+  #             volumeMounts:
+  #               - mountPath: /home/node/download-cache
+  #                 name: cache-volume
+  #               - mountPath: /home/node/config
+  #                 name: razeedeploy-config
+  #         volumes:
+  #           - name: cache-volume
+  #             emptyDir: {}
+  #           - name: razeedeploy-config
+  #             configMap:
+  #               name: razeedeploy-config
+  #               defaultMode: 400
+  #               optional: true
 
-  - apiVersion: apiextensions.k8s.io/v1beta1
+  - apiVersion: apiextensions.k8s.io/v1
     kind: CustomResourceDefinition
     metadata:
       # name must match the spec fields below, and be in the form: <plural>.<group>
@@ -89,18 +89,6 @@ items:
     spec:
       # group name to use for REST API: /apis/<group>/<version>
       group: deploy.razee.io
-      # list of versions supported by this CustomResourceDefinition
-      versions:
-        - name: v1alpha1
-          # Each version can be enabled/disabled by Served flag.
-          served: true
-          # One and only one version must be marked as the storage version.
-          storage: false
-        - name: v1alpha2
-          # Each version can be enabled/disabled by Served flag.
-          served: true
-          # One and only one version must be marked as the storage version.
-          storage: true
       # either Namespaced or Cluster
       scope: Namespaced
       names:
@@ -113,48 +101,150 @@ items:
         # shortNames allow shorter string to match your resource on the CLI
         shortNames:
           - rr
-      subresources:
-        # status enables the status subresource.
-        status: {}
-      validation:
-        # openAPIV3Schema is the schema for validating custom objects.
-        openAPIV3Schema:
-          type: object
-          required: [spec]
-          properties:
-            spec:
+      # list of versions supported by this CustomResourceDefinition
+      versions:
+        - name: v1alpha2
+          # Each version can be enabled/disabled by Served flag.
+          served: true
+          # One and only one version must be marked as the storage version.
+          storage: true
+          subresources:
+            # status enables the status subresource.
+            status: {}
+          schema:
+            # openAPIV3Schema is the schema for validating custom objects.
+            openAPIV3Schema:
               type: object
-              required: [requests]
+              required: [spec]
               properties:
-                clusterAuth:
+                spec:
                   type: object
+                  required: [requests]
                   properties:
-                    impersonateUser:
+                    clusterAuth:
+                      type: object
+                      properties:
+                        impersonateUser:
+                          type: string
+                    backendService:
                       type: string
-                requests:
-                  type: array
-                  items:
-                    type: object
-                    required: [options]
-                    properties:
-                      optional:
-                        type: boolean
-                      options:
+                      enum: [generic, s3]
+                    auth:
+                      type: object
+                      oneOf:
+                        - required: [hmac]
+                        - required: [iam]
+                      properties:
+                        hmac:
+                          type: object
+                          allOf:
+                            - oneOf:
+                                - required: [accessKeyId]
+                                - required: [accessKeyIdRef]
+                            - oneOf:
+                                - required: [secretAccessKey]
+                                - required: [secretAccessKeyRef]
+                          properties:
+                            accessKeyId:
+                              type: string
+                            accessKeyIdRef:
+                              type: object
+                              required: [valueFrom]
+                              properties:
+                                valueFrom:
+                                  type: object
+                                  required: [secretKeyRef]
+                                  properties:
+                                    secretKeyRef:
+                                      type: object
+                                      required: [name, key]
+                                      properties:
+                                        name:
+                                          type: string
+                                        namespace:
+                                          type: string
+                                        key:
+                                          type: string
+                            secretAccessKey:
+                              type: string
+                            secretAccessKeyRef:
+                              type: object
+                              required: [valueFrom]
+                              properties:
+                                valueFrom:
+                                  type: object
+                                  required: [secretKeyRef]
+                                  properties:
+                                    secretKeyRef:
+                                      type: object
+                                      required: [name, key]
+                                      properties:
+                                        name:
+                                          type: string
+                                        namespace:
+                                          type: string
+                                        key:
+                                          type: string
+                        iam:
+                          type: object
+                          allOf:
+                            - required: [url]
+                            - oneOf:
+                                - required: [grantType]
+                            - oneOf:
+                                - required: [apiKey]
+                                - required: [apiKeyRef]
+                          properties:
+                            responseType:
+                              type: string
+                            grantType:
+                              type: string
+                            url:
+                              type: string
+                              format: uri
+                            apiKey:
+                              type: string
+                            apiKeyRef:
+                              type: object
+                              required: [valueFrom]
+                              properties:
+                                valueFrom:
+                                  type: object
+                                  required: [secretKeyRef]
+                                  properties:
+                                    secretKeyRef:
+                                      type: object
+                                      required: [name, key]
+                                      properties:
+                                        name:
+                                          type: string
+                                        namespace:
+                                          type: string
+                                        key:
+                                          type: string
+                    requests:
+                      type: array
+                      items:
                         type: object
-                        x-kubernetes-preserve-unknown-fields: true
-                        oneOf:
-                          - required: [url]
-                          - required: [uri]
+                        required: [options]
                         properties:
-                          url:
-                            type: string
-                            format: uri
-                          uri:
-                            type: string
-                            format: uri
-                          headers:
+                          optional:
+                            type: boolean
+                          options:
                             type: object
-                            x-kubernetes-preserve-unknown-fields: true
-            status:
-              type: object
-              x-kubernetes-preserve-unknown-fields: true
+                            oneOf:
+                              - required: [url]
+                              - required: [uri]
+                            properties:
+                              url:
+                                type: string
+                                format: uri
+                              uri:
+                                type: string
+                                format: uri
+                              headers:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
+                status:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
