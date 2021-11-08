@@ -28,7 +28,7 @@ const { BaseDownloadController } = require('@razee/razeedeploy-core');
 
 module.exports = class RemoteResourceS3Controller extends BaseDownloadController {
   constructor(params) {
-    params.finalizerString = params.finalizerString || 'children.downloads.deploy.razee.io';
+    params.finalizerString = params.finalizerString || 'children.remoteresource.deploy.razee.io';
     params.logger = params.logger || loggerFactory.createLogger('RemoteResourceS3Controller');
     super(params);
   }
