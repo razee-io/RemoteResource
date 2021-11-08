@@ -25,6 +25,7 @@ async function createNewEventHandler(kc) {
   let result;
   let resourceMeta = await kc.getKubeResourceMeta('deploy.razee.io/v1alpha2', ControllerString, 'watch');
   if (resourceMeta) {
+    log.info(`Listening for events for deploy.razee.io/v1alpha2: ${ControllerString}`);
     let params = {
       kubeResourceMeta: resourceMeta,
       factory: Controller,
