@@ -43,9 +43,7 @@ async function createNewEventHandler(kc) {
 
 async function main() {
   const kc = new KubeClass(kubeApiConfig);
-  const eventHandlers = [];
-  eventHandlers.push(createNewEventHandler(kc));
-  return eventHandlers;
+  await createNewEventHandler(kc);
 }
 
 function createEventListeners() {
