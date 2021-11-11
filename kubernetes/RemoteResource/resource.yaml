@@ -188,15 +188,11 @@ items:
                         iam:
                           type: object
                           allOf:
-                            - required: [url]
-                            - oneOf:
-                                - required: [grantType]
+                            - required: [url, grantType]
                             - oneOf:
                                 - required: [apiKey]
                                 - required: [apiKeyRef]
                           properties:
-                            responseType:
-                              type: string
                             grantType:
                               type: string
                             url:
