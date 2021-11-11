@@ -70,5 +70,7 @@ async function run() {
 }
 
 module.exports = {
-  run
+  run,
+  RemoteResourceController: require('./RemoteResourceController'),
+  RemoteResourceS3Controller: require('./RemoteResourceS3Controller')
 };
