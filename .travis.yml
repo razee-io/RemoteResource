@@ -22,7 +22,7 @@ jobs:
        - docker build --rm -t "quay.io/razee/remoteresource:${TRAVIS_COMMIT}-amd64" .
        - if [ -n "${TRAVIS_TAG}" ]; then docker tag quay.io/razee/remoteresource:${TRAVIS_COMMIT}-amd64 quay.io/razee/remoteresource:${TRAVIS_TAG}-amd64; fi
        - docker images
-       - ./build/process-template.sh kubernetes/remoteresource/resource.yaml >/tmp/resource.yaml
+       - ./build/process-template.sh kubernetes/RemoteResource/resource.yaml >/tmp/resource.yaml
 
      before_deploy:
        - docker login -u="${QUAY_ID}" -p="${QUAY_TOKEN}" quay.io
@@ -53,7 +53,7 @@ jobs:
        - docker build --rm -t "quay.io/razee/remoteresource:${TRAVIS_COMMIT}-ppc64le" .
        - if [ -n "${TRAVIS_TAG}" ]; then docker tag quay.io/razee/remoteresource:${TRAVIS_COMMIT}-ppc64le quay.io/razee/remoteresource:${TRAVIS_TAG}-ppc64le; fi
        - docker images
-       - ./build/process-template.sh kubernetes/remoteresource/resource.yaml >/tmp/resource.yaml
+       - ./build/process-template.sh kubernetes/RemoteResource/resource.yaml >/tmp/resource.yaml
 
      before_deploy:
        - docker login -u="${QUAY_ID}" -p="${QUAY_TOKEN}" quay.io
@@ -85,7 +85,7 @@ jobs:
        - docker build --rm -t "quay.io/razee/remoteresource:${TRAVIS_COMMIT}-s390x" .
        - if [ -n "${TRAVIS_TAG}" ]; then docker tag quay.io/razee/remoteresource:${TRAVIS_COMMIT}-s390x quay.io/razee/remoteresource:${TRAVIS_TAG}-s390x; fi
        - docker images
-       - ./build/process-template.sh kubernetes/remoteresource/resource.yaml >/tmp/resource.yaml
+       - ./build/process-template.sh kubernetes/RemoteResource/resource.yaml >/tmp/resource.yaml
 
      before_deploy:
        - docker login -u="${QUAY_ID}" -p="${QUAY_TOKEN}" quay.io
@@ -111,7 +111,7 @@ jobs:
      arch: amd64
      script:
        - if [[ $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then npm version --no-git-tag-version "${TRAVIS_TAG}"; fi
-       - ./build/process-template.sh kubernetes/remoteresource/resource.yaml >/tmp/resource.yaml
+       - ./build/process-template.sh kubernetes/RemoteResource/resource.yaml >/tmp/resource.yaml
        - export DOCKER_CLI_EXPERIMENTAL=enabled
        - sudo chown -R $USER:$USER /etc/docker/
        - |
