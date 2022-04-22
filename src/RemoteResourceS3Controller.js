@@ -24,7 +24,7 @@ const clone = require('clone');
 const loggerFactory = require('./bunyan-api');
 const { BaseDownloadController } = require('@razee/razeedeploy-core');
 
-// Creating outside class definition so only one instance is ceated and used for all events
+// Creating outside class definition so only one instance is created and used for all events
 const iamTokenCache = {};
 
 
