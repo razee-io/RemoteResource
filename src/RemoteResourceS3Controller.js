@@ -16,7 +16,6 @@
 
 const objectPath = require('object-path');
 const request = require('request-promise-native');
-const fs = require('fs-extra');
 const hash = require('object-hash');
 const axios = require('axios');
 const merge = require('deepmerge');
@@ -24,6 +23,9 @@ const xml2js = require('xml2js');
 const clone = require('clone');
 const loggerFactory = require('./bunyan-api');
 const { BaseDownloadController } = require('@razee/razeedeploy-core');
+
+// Creating outside class definition so only one instance is created and used for all events
+const iamTokenCache = {};
 
 
 module.exports = class RemoteResourceS3Controller extends BaseDownloadController {
@@ -201,23 +203,10 @@ module.exports = class RemoteResourceS3Controller extends BaseDownloadController
 
 
   async _requestToken(iam, apiKey) {
-    let token;
-    if (this.s3TokenCache === undefined) {
-      this.s3TokenCache = {};
-    }
     const apiKeyHash = hash(apiKey, { algorithm: 'shake256' });
-    let tokenCacheFile = `./download-cache/s3token-cache/${apiKeyHash}.json`;
-    if (token === undefined && await fs.pathExists(tokenCacheFile)) {
-      // fetch cached token
-      if (objectPath.has(this.s3TokenCache, [apiKeyHash])) {
-        token = objectPath.get(this.s3TokenCache, [apiKeyHash]);
-      } else if (await fs.pathExists(tokenCacheFile)) {
-        token = await fs.readJson(tokenCacheFile);
-        objectPath.set(this.s3TokenCache, [apiKeyHash], token);
-      }
-    }
+    let token = iamTokenCache?.[apiKeyHash];
     if (token !== undefined) {
-      const expires = objectPath.get(token, 'expiration', 0); // expiration: time since epoch in seconds
+      const expires = token?.expiration ?? 0; // expiration: time since epoch in seconds
       // re-use cached token as long as we are more than 2 minutes away from expiring.
       if (Date.now() < (expires - 120) * 1000) {
         return token;
@@ -239,12 +228,7 @@ module.exports = class RemoteResourceS3Controller extends BaseDownloadController
         timeout: 60000
       });
       token = res.data;
-      try {
-        await fs.outputJson(tokenCacheFile, token);
-        objectPath.set(this.s3TokenCache, [apiKeyHash], token);
-      } catch (fe) {
-        return Promise.reject(`failed to cache s3Token to disk at path ${tokenCacheFile}`, fe);
-      }
+      iamTokenCache[apiKeyHash] = token;
       return token;
     } catch (err) {
       const error = Buffer.isBuffer(err) ? err.toString('utf8') : err;
