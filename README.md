@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.com/razee-io/RemoteResource.svg?branch=master)](https://travis-ci.com/razee-io/RemoteResource)
 ![GitHub](https://img.shields.io/github/license/razee-io/RemoteResource.svg?color=success)
-[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=razee-io/RemoteResource)](https://dependabot.com)
 
 RemoteResource is the foundation for implementing continuous deployment with
 razeedeploy. It retrieves and applies the configuration for all resources.
@@ -244,8 +243,8 @@ for authenticating with an S3 object store.
 
 **Note:** You can reference secret data in your header options by setting the value
 of any key in the headers to be `valueFrom.secretKeyRef`.
-eg. `.spec.requests[].options.headers.<yourHeaderKey> =
-.valueFrom.secretKeyRef.{name, namespace, key}`
+ie. `.spec.requests[].options.headers.<yourHeaderKey> =`
+`.valueFrom.secretKeyRef.{name, namespace, key}`
 
 **Schema:**
 
@@ -287,9 +286,9 @@ optional:
 ### Download Directory Contents
 
 - If `.spec.backendService` is set to `s3` and url ends with `/`, we will assume
-this is an S3 directory and will attempt to download all resources in the directory.
+  this is an S3 directory and will attempt to download all resources in the directory.
 - Every resource within the directory will be downloaded using the `.spec.requests[].options`
-provided with the directory url.
+  provided with the directory url.
 - Path must follow one of:
   - `http://s3.endpoint.com/bucket/path/to/your/resources/`
   - `http://bucket.s3.endpoint.com/path/to/your/resources/`
@@ -302,11 +301,11 @@ Child resource: `.metadata.labels[deploy.razee.io/Reconcile]`
 
 - DEFAULT: `true`
   - A razeedeploy resource (parent) will clean up a resources it applies (child)
-when either the child is no longer in the parent resource definition or the
-parent is deleted.
+    when either the child is no longer in the parent resource definition or the
+    parent is deleted.
 - `false`
   - This behavior can be overridden when a child's resource definition has
-the label `deploy.razee.io/Reconcile=false`.
+    the label `deploy.razee.io/Reconcile=false`.
 
 #### Resource Update Mode
 
@@ -318,24 +317,35 @@ overridden when a child's resource definition has the label
 
 Mode options:
 
-- DEFAULT: `MergePatch`
+- DEFAULT: `Apply` (`MergePatch`)
   - A simple merge, that will merge objects and replace arrays. Items previously
-  defined, then removed from the definition, will be removed from the live resource.
+    defined, then removed from the definition, will be removed from the live resource.
   - "As defined in [RFC7386](https://tools.ietf.org/html/rfc7386), a Merge Patch
-  is essentially a partial representation of the resource. The submitted JSON is
-  "merged" with the current resource to create a new one, then the new one is
-  saved. For more details on how to use Merge Patch, see the RFC." [Reference](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#patch-operations)
+    is essentially a partial representation of the resource. The submitted JSON is
+    "merged" with the current resource to create a new one, then the new one is
+    saved. For more details on how to use Merge Patch, see the RFC." [Reference](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#patch-operations)
 - `StrategicMergePatch`
   - A more complicated merge, the kubernetes apiServer has defined keys to be
-  able to intelligently merge arrays it knows about.
+    able to intelligently merge arrays it knows about.
   - "Strategic Merge Patch is a custom implementation of Merge Patch. For a
-  detailed explanation of how it works and why it needed to be introduced, see
-  [StrategicMergePatch](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-api-machinery/strategic-merge-patch.md)."
-  [Reference](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#patch-operations)
+    detailed explanation of how it works and why it needed to be introduced, see
+    [StrategicMergePatch](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-api-machinery/strategic-merge-patch.md)."
+    [Reference](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#patch-operations)
   - [Kubectl Apply Semantics](https://kubectl.docs.kubernetes.io/pages/app_management/field_merge_semantics.html)
+- `AdditiveMergePatch`
+  - Similar to the default `Apply` (`MergePatch`), this is a simple merge, that
+    will merge objects and replace arrays. The difference is that it will
+    not remove fields from the live resource when they are removed from the
+    definition. eg. This will only add/update fields, it wont remove fields.
+  - If you are using this mode and find that you need to remove a field, you can
+    do so manually, by setting the field in the yaml defintion to have a value
+    of `null`. When the null value is merged with the live resource, it will
+    effectively delete the field.
+  - This mode is useful if you have very large resources and require that the
+    `last-applied-configuration` annotation is not injected into the resource.
 - `EnsureExists`
   - Will ensure the resource is created and is replaced if deleted. Will not
-  enforce a definition.
+    enforce a definition.
 
 ### Debug Individual Resource
 
@@ -359,5 +369,6 @@ controller pods so the deployment can mount the ConfigMap as a volume. If the
 
 1. `export CONTROLLER_NAME=remoteresource-controller && export CONTROLLER_NAMESPACE=razee`
 1. `kubectl create cm razeedeploy-config -n $CONTROLLER_NAMESPACE --from-literal=lock-cluster=true`
-1. `kubectl delete pods -n $CONTROLLER_NAMESPACE $(kubectl get pods -n $CONTROLLER_NAMESPACE
- | grep $CONTROLLER_NAME | awk '{print $1}' | paste -s -d ',' -)`
+1. `kubectl delete pods -n $CONTROLLER_NAMESPACE $(kubectl get pods -n`
+   `$CONTROLLER_NAMESPACE | grep $CONTROLLER_NAME | awk '{print $1}'`
+   `| paste -s -d ',' -)`
