@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.com/razee-io/RemoteResource.svg?branch=master)](https://travis-ci.com/razee-io/RemoteResource)
 ![GitHub](https://img.shields.io/github/license/razee-io/RemoteResource.svg?color=success)
-[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=razee-io/RemoteResource)](https://dependabot.com)
 
 RemoteResource is the foundation for implementing continuous deployment with
 razeedeploy. It retrieves and applies the configuration for all resources.
@@ -318,7 +317,7 @@ overridden when a child's resource definition has the label
 
 Mode options:
 
-- DEFAULT: `MergePatch`
+- DEFAULT: `Apply` (`MergePatch`)
   - A simple merge, that will merge objects and replace arrays. Items previously
   defined, then removed from the definition, will be removed from the live resource.
   - "As defined in [RFC7386](https://tools.ietf.org/html/rfc7386), a Merge Patch
@@ -333,6 +332,17 @@ Mode options:
   [StrategicMergePatch](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-api-machinery/strategic-merge-patch.md)."
   [Reference](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#patch-operations)
   - [Kubectl Apply Semantics](https://kubectl.docs.kubernetes.io/pages/app_management/field_merge_semantics.html)
+- `AdditiveMergePatch`
+  - Similar to the default `Apply` (`MergePatch`), this is a simple merge, that
+    will merge objects and replace arrays. The difference is that it will
+    not remove fields from the live resource when they are removed from the
+    definition. eg. This will only add/update fields, it wont remove fields.
+  - If you are using this mode and find that you need to remove a field, you can
+    do so manually, by setting the field in the yaml defintion to have a value
+    of `null`. When the null value is merged with the live resource, it will
+    effectively delete the field.
+  - This mode is useful if you have very large resources and require that the
+    `last-applied-configuration` annotation is not injected into the resource.
 - `EnsureExists`
   - Will ensure the resource is created and is replaced if deleted. Will not
   enforce a definition.
