@@ -19,8 +19,9 @@ razeedeploy. It retrieves and applies the configuration for all resources.
    Refer to [the impersonation webhook](<https://github.com/razee-io/ImpersonationWebhook>)
    for installation instruction.
    **Important:**
-   This webhook **must** be installed to perform permission validation. Otherwise, privilege
-   escalation can occur via `.spec.clusterAuth.impersonateUser` field.
+   This webhook **must** be installed to perform permission validation.
+   Otherwise, privilege escalation can occur via
+   `.spec.clusterAuth.impersonateUser` field.
 
 **Note**: [Razee Deploy Delta](https://github.com/razee-io/razeedeploy-delta)
 can be used to simplify deployment process.
