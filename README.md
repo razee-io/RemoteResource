@@ -8,9 +8,22 @@ razeedeploy. It retrieves and applies the configuration for all resources.
 
 ## Install
 
-```shell
-kubectl apply -f "https://github.com/razee-io/RemoteResource/releases/latest/download/resource.yaml"
-```
+1. Install custom resource definition and controller
+
+   ```shell
+   kubectl apply -f "https://github.com/razee-io/RemoteResource/releases/latest/download/resource.yaml"
+   ```
+
+2. Install impersonation webhook
+
+   Refer to [the impersonation webhook](<https://github.com/razee-io/ImpersonationWebhook>)
+   for installation instruction.
+   **Important:**
+   This webhook **must** be installed to perform permission validation. Otherwise, privilege
+   escalation can occur via `.spec.clusterAuth.impersonateUser` field.
+
+**Note**: [Razee Deploy Delta](https://github.com/razee-io/razeedeploy-delta)
+can be used to simplify deployment process.
 
 ## Resource Definition
 
@@ -74,19 +87,16 @@ spec:
 
 **Path:** `.spec.clusterAuth.impersonateUser`
 
-**Description:** Impersonates a user for the given resource. This includes all
-actions the controller must make related to the resource (fetching envs, getting
-resources, applying resources, etc.). The RazeeDeploy resource must be created in
-the razeedeploy namespace in order to use impersonateUser, all other namespaces
-will ignore impersonateUser and default to the razeedeploy user (eg. no user impersonation).
-ImpersonateUser only applies to the single RazeeDeploy resource that it has been
-added to.
+**Description:** [Impersonates](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#user-impersonation)
+a user for the given resource. This includes all actions the controller must
+make related to the resource (fetching envs, getting resources, applying
+resources, etc.). ImpersonateUser only applies to the single RazeeDeploy
+resource that it has been added to.
 
-**Note:**: If cluster owners want to prevent users, with direct cluster access, from
-using user-impersonation, they should prevent those users from creating RazeeDeploy
-resources in the razeedeploy namespace. In the future we will have an Admission
-Controller that should improve security and eliminate the need for the razeedeploy
-namespace scoping. [razeedeploy-core #189](https://github.com/razee-io/razeedeploy-core/issues/189)
+**Important:** [The impersonation webhook](https://github.com/razee-io/ImpersonationWebhook)
+**must** be installed to perform permission validation. Only users with impersonation
+permission can impersonate others. If the webhook is not installed, anyone can
+impersonate others, and this will lead to privilege escalation.
 
 **Schema:**
 
