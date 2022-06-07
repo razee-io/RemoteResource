@@ -8,13 +8,7 @@ razeedeploy. It retrieves and applies the configuration for all resources.
 
 ## Install
 
-1. Install custom resource definition and controller
-
-   ```shell
-   kubectl apply -f "https://github.com/razee-io/RemoteResource/releases/latest/download/resource.yaml"
-   ```
-
-2. Install impersonation webhook
+1. Install impersonation webhook
 
    Refer to [the impersonation webhook](<https://github.com/razee-io/ImpersonationWebhook>)
    for installation instruction.
@@ -22,6 +16,12 @@ razeedeploy. It retrieves and applies the configuration for all resources.
    This webhook **must** be installed to perform permission validation.
    Otherwise, privilege escalation can occur via
    `.spec.clusterAuth.impersonateUser` field.
+
+2. Install custom resource definition and controller
+
+   ```shell
+   kubectl apply -f "https://github.com/razee-io/RemoteResource/releases/latest/download/resource.yaml"
+   ```
 
 **Note**: [Razee Deploy Delta](https://github.com/razee-io/razeedeploy-delta)
 can be used to simplify deployment process.
