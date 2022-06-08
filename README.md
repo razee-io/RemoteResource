@@ -8,23 +8,50 @@ razeedeploy. It retrieves and applies the configuration for all resources.
 
 ## Install
 
-1. Install impersonation webhook
+[Razee Deploy Delta](https://github.com/razee-io/razeedeploy-delta) is the
+recommended way to install RemoteResource.
 
-   Refer to [the impersonation webhook](<https://github.com/razee-io/ImpersonationWebhook>)
-   for installation instruction.
-   **Important:**
-   This webhook **must** be installed to perform permission validation.
-   Otherwise, privilege escalation can occur via
-   `.spec.clusterAuth.impersonateUser` field.
+## Customize the Controller
 
-2. Install custom resource definition and controller
+The optional `razeedeploy-config` ConfigMap can be used to customize the
+controller.
 
-   ```shell
-   kubectl apply -f "https://github.com/razee-io/RemoteResource/releases/latest/download/resource.yaml"
-   ```
+Because the ConfigMap is optional, if it is created the first time, you must
+restart controller pods, so the deployment can mount the ConfigMap
+as a volume.
 
-**Note**: [Razee Deploy Delta](https://github.com/razee-io/razeedeploy-delta)
-can be used to simplify deployment process.
+Example:
+
+```yaml
+apiVersion: v1
+data:
+  lock-cluster: "false"
+  enable-impersonation: "false"
+kind: ConfigMap
+metadata:
+  name: razeedeploy-config
+  namespace: razee
+```
+
+### Lock Cluster
+
+Setting `lock-cluster` to "true" prevents the controller from updating
+resources on the cluster.
+
+### Enable User Impersonation
+
+Setting `enable-impersonation` to "true" allows the controller to perform
+[user impersonation](https://github.com/razee-io/MustacheTemplate#user-impersonation)
+in all namespaces, if authenticated user is granted impersonation permission.
+
+By default, the controller allows any authenticated user to impersonate other
+users in the `razeedeploy` namespace. This is a short term solution to support
+impersonation and limit privilege escalation (by limiting the action to
+the `razeedeploy` namespace only).
+
+With [ImpersonationWebhook](https://github.com/razee-io/ImpersonationWebhook),
+impersonation can be fully enabled, given that the webhook is installed and
+registered, and necessary role bindings are created.
 
 ## Resource Definition
 
@@ -370,16 +397,3 @@ overriding your changes. Note: this will only work when you add it to live resou
 If you want to have the EnsureExist behavior, see [Resource Update Mode](#Resource-Update-Mode).
 
 - ie: `kubectl label rr <your-rr> deploy.razee.io/debug=true`
-
-### Lock Cluster Updates
-
-Prevents the controller from updating resources on the cluster. If this is the
-first time creating the `razeedeploy-config` ConfigMap, you must delete the running
-controller pods so the deployment can mount the ConfigMap as a volume. If the
-`razeedeploy-config` ConfigMap already exists, just add the pair `lock-cluster: true`.
-
-1. `export CONTROLLER_NAME=remoteresource-controller && export CONTROLLER_NAMESPACE=razee`
-1. `kubectl create cm razeedeploy-config -n $CONTROLLER_NAMESPACE --from-literal=lock-cluster=true`
-1. `kubectl delete pods -n $CONTROLLER_NAMESPACE $(kubectl get pods -n`
-   `$CONTROLLER_NAMESPACE | grep $CONTROLLER_NAME | awk '{print $1}'`
-   `| paste -s -d ',' -)`
