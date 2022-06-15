@@ -41,17 +41,19 @@ resources on the cluster.
 ### Enable User Impersonation
 
 Setting `enable-impersonation` to "true" allows the controller to perform
-[user impersonation](https://github.com/razee-io/MustacheTemplate#user-impersonation)
+[user impersonation](https://github.com/razee-io/RemoteResource#user-impersonation)
 in all namespaces, if authenticated user is granted impersonation permission.
 
-By default, the controller allows any authenticated user to impersonate other
-users in the `razeedeploy` namespace. This is a short term solution to support
-impersonation and limit privilege escalation (by limiting the action to
-the `razeedeploy` namespace only).
+**IMPORTANT:** it is highly advised to set up [ImpersonationWebhook](https://github.com/razee-io/ImpersonationWebhook)
+before enabling cluster-wide impersonation. Once the ImpersonationWebhook controller is installed
+and all necessary config and authorizations in place, impersonation can be fully enabled from this
+configmap. If ImpersonationWebhook is not installed before enabling impersonation, any user on the
+cluster that is allowed to create razeedeploy resources will be able to impersonate any other user.
 
-With [ImpersonationWebhook](https://github.com/razee-io/ImpersonationWebhook),
-impersonation can be fully enabled, given that the webhook is installed and
-registered, and necessary role bindings are created.
+By default, `enable-impersonation` is `false`, and the controller only allows users 
+to impersonate other users in the `razeedeploy` namespace. This is a short term
+solution to support impersonation and limit privilege escalation (by limiting the action to
+the `razeedeploy` namespace only).
 
 ## Resource Definition
 
