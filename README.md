@@ -24,13 +24,13 @@ Example:
 
 ```yaml
 apiVersion: v1
-data:
-  lock-cluster: "false"
-  enable-impersonation: "false"
 kind: ConfigMap
 metadata:
   name: razeedeploy-config
-  namespace: razee
+  namespace: razeedeploy
+data:
+  lock-cluster: "false"
+  enable-impersonation: "false"
 ```
 
 ### Lock Cluster
