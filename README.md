@@ -11,49 +11,16 @@ razeedeploy. It retrieves and applies the configuration for all resources.
 [Razee Deploy Delta](https://github.com/razee-io/razeedeploy-delta) is the
 recommended way to install RemoteResource.
 
-## Customize the Controller
+Optional: [Advanced Controller Options](#cluster-wide-controls)
 
-The optional `razeedeploy-config` ConfigMap can be used to customize the
-controller.
-
-Because the ConfigMap is optional, if it is created the first time, you must
-restart controller pods, so the deployment can mount the ConfigMap
-as a volume.
-
-Example:
-
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: razeedeploy-config
-  namespace: razeedeploy
-data:
-  lock-cluster: "false"
-  enable-impersonation: "false"
-```
-
-### Lock Cluster
-
-Setting `lock-cluster` to "true" prevents the controller from updating
-resources on the cluster.
-
-### Enable User Impersonation
-
-Setting `enable-impersonation` to "true" allows the controller to perform
-[user impersonation](https://github.com/razee-io/RemoteResource#user-impersonation)
-in all namespaces, if authenticated user is granted impersonation permission.
-
-**IMPORTANT:** it is highly advised to set up [ImpersonationWebhook](https://github.com/razee-io/ImpersonationWebhook)
-before enabling cluster-wide impersonation. Once the ImpersonationWebhook controller is installed
-and all necessary config and authorizations in place, impersonation can be fully enabled from this
-configmap. If ImpersonationWebhook is not installed before enabling impersonation, any user on the
-cluster that is allowed to create razeedeploy resources will be able to impersonate any other user.
-
-By default, `enable-impersonation` is `false`, and the controller only allows users 
-to impersonate other users in the `razeedeploy` namespace. This is a short term
-solution to support impersonation and limit privilege escalation (by limiting the action to
-the `razeedeploy` namespace only).
+**Warning:** By default, Razeedeploy runs as cluster wide admin. Any user that has
+permission to create a razeedeploy resource (RemoteResource or MustacheTemplate)
+has the ability to escalate their privileges. To prevent privilege escalation,
+cluster owners should restrict which users are allowed to create razeedeploy
+resources. Alternatively, you can setup [ImpersonationWebhook](https://github.com/razee-io/ImpersonationWebhook)
+and then [enable user impersonation](#enable-cluster-wide-user-impersonation) to
+ensure razeedeploy only allows users to do operations that they have already been
+granted access to do.
 
 ## Resource Definition
 
@@ -123,10 +90,16 @@ make related to the resource (fetching envs, getting resources, applying
 resources, etc.). ImpersonateUser only applies to the single RazeeDeploy
 resource that it has been added to.
 
-**Important:** [The impersonation webhook](https://github.com/razee-io/ImpersonationWebhook)
-**must** be installed to perform permission validation. Only users with impersonation
-permission can impersonate others. If the webhook is not installed, anyone can
-impersonate others, and this will lead to privilege escalation.
+**Enable Feature:** [Enable User Impersonation](#enable-cluster-wide-user-impersonation)
+
+**Warning:** By default, Razeedeploy runs as cluster wide admin. Any user that has
+permission to create a razeedeploy resource (RemoteResource or MustacheTemplate)
+has the ability to escalate their privileges. To prevent privilege escalation,
+cluster owners should restrict which users are allowed to create razeedeploy
+resources. Alternatively, you can setup [ImpersonationWebhook](https://github.com/razee-io/ImpersonationWebhook)
+and then [enable user impersonation](#enable-cluster-wide-user-impersonation) to
+ensure razeedeploy only allows users to do operations that they have already been
+granted access to do.
 
 **Schema:**
 
@@ -399,3 +372,59 @@ overriding your changes. Note: this will only work when you add it to live resou
 If you want to have the EnsureExist behavior, see [Resource Update Mode](#Resource-Update-Mode).
 
 - ie: `kubectl label rr <your-rr> deploy.razee.io/debug=true`
+
+## Cluster Wide Controls
+
+The optional `razeedeploy-config` ConfigMap can be used to customize the
+controller for cluster wide actions.
+
+Because the ConfigMap is optional, if it is created the first time, you must
+restart controller pods, so the deployment can mount the ConfigMap
+as a volume.
+
+Example:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: razeedeploy-config
+  namespace: razeedeploy
+data:
+  lock-cluster: "false"
+  enable-impersonation: "false"
+```
+
+### Lock Cluster
+
+**Key:** `lock-cluster`
+
+**Options:**
+
+- DEFAULT: `false`
+  - Allows the controller to continue normal operations on the cluster.
+- `true`
+  - Prevents the controller from updating resources on the cluster.
+
+### Enable Cluster Wide User Impersonation
+
+**Key:** `enable-impersonation`
+
+**Options:**
+
+- DEFAULT: `false`
+  - Prevents the controller from performing [user impersonation](https://github.com/razee-io/RemoteResource#user-impersonation)
+    in all namespaces. Continues to allow user impersonation in the `razeedeploy`
+    namespace. To prevent privildge escalation, users should be restricted from
+    creating razeedeploy resources.
+- `true`
+  - Allows the controller to perform [user impersonation](https://github.com/razee-io/RemoteResource#user-impersonation)
+    in all namespaces. **See important note below about steps that should be taken
+    to properly configure this feature before enabling.**
+
+**IMPORTANT:** it is highly advised to set up [ImpersonationWebhook](https://github.com/razee-io/ImpersonationWebhook)
+before enabling cluster-wide impersonation. If ImpersonationWebhook is not installed
+before enabling impersonation, any user on the cluster that is allowed to create
+razeedeploy resources will be able to impersonate any other user. Once the ImpersonationWebhook
+controller is installed and all necessary config and authorizations in place, impersonation
+can be safely enabled in the `razeedeploy-config` configmap.
