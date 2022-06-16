@@ -413,12 +413,12 @@ data:
 **Options:**
 
 - DEFAULT: `false`
-  - Prevents the controller from performing [user impersonation](https://github.com/razee-io/RemoteResource#user-impersonation)
+  - Prevents the controller from performing [user impersonation](#user-impersonation)
     in all namespaces. Continues to allow user impersonation in the `razeedeploy`
     namespace. To prevent privildge escalation, users should be restricted from
     creating razeedeploy resources.
 - `true`
-  - Allows the controller to perform [user impersonation](https://github.com/razee-io/RemoteResource#user-impersonation)
+  - Allows the controller to perform [user impersonation](#user-impersonation)
     in all namespaces. **See important note below about steps that should be taken
     to properly configure this feature before enabling.**
 
