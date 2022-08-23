@@ -241,26 +241,52 @@ items:
                               uri:
                                 type: string
                                 format: uri
-                              github:
+                              git: 
                                 type: object
-                                required: [repo, branch, pattern]
+                                oneOf:
+                                  - required: [github]
+                                  - required: [gitlab]
                                 properties:
-                                  repo:
-                                    type: string
-                                  branch: 
-                                    type: string
-                                  pattern:
-                                    type: string
-                                  token:
+                                  github:
                                     type: object
-                                    required: [name, namespace, key]
+                                    required: [repo, branch, pattern, token]
                                     properties:
-                                      name:
+                                      repo:
                                         type: string
-                                      namespace:
+                                      branch: 
                                         type: string
-                                      key:
+                                      pattern:
                                         type: string
+                                      token:
+                                        type: object
+                                        required: [name, namespace, key]
+                                        properties:
+                                          name:
+                                            type: string
+                                          namespace:
+                                            type: string
+                                          key:
+                                            type: string
+                                  gitlab:
+                                    type: object
+                                    required: [project, branch, pattern, token]
+                                    properties:
+                                      project:
+                                        type: string
+                                      branch: 
+                                        type: string
+                                      pattern:
+                                        type: string
+                                      token:
+                                        type: object
+                                        required: [name, namespace, key]
+                                        properties:
+                                          name:
+                                            type: string
+                                          namespace:
+                                            type: string
+                                          key:
+                                            type: string
                               headers:
                                 type: object
                                 x-kubernetes-preserve-unknown-fields: true
