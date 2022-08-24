@@ -233,6 +233,7 @@ items:
                             oneOf:
                               - required: [url]
                               - required: [uri]
+                              - required: [git]
                             properties:
                               url:
                                 type: string
@@ -240,6 +241,18 @@ items:
                               uri:
                                 type: string
                                 format: uri
+                              git: 
+                                type: object
+                                required: [gittype, repo, branch, pattern]
+                                properties:
+                                  gittype:
+                                    type: string
+                                  repo:
+                                    type: string
+                                  branch: 
+                                    type: string
+                                  pattern:
+                                    type: string
                               headers:
                                 type: object
                                 x-kubernetes-preserve-unknown-fields: true
