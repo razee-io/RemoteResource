@@ -369,7 +369,7 @@ the resource, and the label `deploy.razee.io/debug: true` exists on the live
 resource, it will treat the resource as ensure exist and not override any changes.
 This is useful for when you need to debug a live resource and don't want razeedeploy
 overriding your changes. Note: this will only work when you add it to live resources.
-If you want to have the EnsureExist behavior, see [Resource Update Mode](#Resource-Update-Mode).
+If you want to have the EnsureExist behavior, see [Resource Update Mode](#resource-update-mode).
 
 - ie: `kubectl label rr <your-rr> deploy.razee.io/debug=true`
 
