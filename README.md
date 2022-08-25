@@ -277,15 +277,16 @@ options:
       format: uri
     git: 
       type: object
-      required: [gittype, repo, branch, pattern]
+      required: [provider, repo, branch, filePath]
       properties:
-        gittype:
+        provider:
           type: string
+          enum: [github, gitlab]
         repo:
           type: string
         branch: 
           type: string
-        pattern:
+        filePath:
           type: string
     headers:
       type: object
