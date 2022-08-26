@@ -267,6 +267,7 @@ options:
   oneOf:
     - required: [url]
     - required: [uri]
+    - required: [git]
   properties:
     url:
       type: string
@@ -274,9 +275,59 @@ options:
     uri:
       type: string
       format: uri
+    git: 
+      type: object
+      required: [provider, repo, branch, filePath]
+      properties:
+        provider:
+          type: string
+          enum: [github, gitlab]
+        repo:
+          type: string
+        branch: 
+          type: string
+        filePath:
+          type: string
     headers:
       type: object
       x-kubernetes-preserve-unknown-fields: true
+    headersFrom:
+      type: array
+      items:
+        type: object
+        oneOf:
+          - required: [configMapRef]
+          - required: [secretMapRef]
+          - required: [genericMapRef]
+        properties:
+          configMapRef:
+            type: object
+            required: [name]
+            properties:
+              name:
+                type: string
+              namespace:
+                type: string
+          secretMapRef:
+            type: object
+            required: [name]
+            properties:
+              name:
+                type: string
+              namespace:
+                type: string
+          genericMapRef:
+            type: object
+            required: [apiVersion, kind, name]
+            properties:
+              apiVersion:
+                type: string
+              kind:
+                type: string
+              name:
+                type: string
+              namespace:
+                type: string
 ```
 
 ### Optional Request
