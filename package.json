@@ -42,6 +42,7 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "@octokit/request": "^6.2.1",
     "@razee/kubernetes-util": "^1.0.1",
     "@razee/razeedeploy-core": "^1.1.1",
     "axios": "^0.27.2",
@@ -51,6 +52,8 @@
     "fs-extra": "^10.1.0",
     "object-hash": "^3.0.0",
     "object-path": "^0.11.8",
+    "parse-filepath": "^1.0.2",
+    "parse-github-url": "^1.0.2",
     "request-promise-native": "^1.0.9",
     "xml2js": "^0.4.23"
   },
