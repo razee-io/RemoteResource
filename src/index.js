@@ -71,5 +71,6 @@ async function run() {
 module.exports = {
   run,
   RemoteResourceController: require('./RemoteResourceController'),
-  RemoteResourceS3Controller: require('./RemoteResourceS3Controller')
+  RemoteResourceS3Controller: require('./RemoteResourceS3Controller'),
+  RemoteResourceGitController: require('./RemoteResourceGitController')
 };
