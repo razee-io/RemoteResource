@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-const objectPath = require('object-path');
 const request = require('request-promise-native');
 const clone = require('clone');
-const octokit = require('@octokit/request');
-const gitFactory = require('./git');
 
 const { BaseDownloadController } = require('@razee/razeedeploy-core');
 
@@ -27,55 +24,6 @@ module.exports = class RemoteResourceController extends BaseDownloadController {
   constructor(params) {
     params.finalizerString = params.finalizerString || 'children.remoteresource.deploy.razee.io';
     super(params);
-  }
-
-  async added() {
-    let requests = objectPath.get(this.data, ['object', 'spec', 'requests'], []);
-    let newRequests = [];
-    for (var i = 0; i < requests.length; i++) {
-      let req = requests[i];
-      let reqOpt = clone(req.options);
-      let optional = req.optional || false;
-      const gitinfo = objectPath.get(req, 'options.git');
-      let files;
-      let git;
-      
-      if (gitinfo) {
-        try {
-          reqOpt = await this._fetchHeaderSecrets(reqOpt);
-        } catch (e) {
-          // error fetching header secrets
-          if (optional) {
-            this.log.warn(e.message);
-            this.updateRazeeLogs('warn', { controller: 'RemoteResource', warn: e.message, repo: git.repo });
-            this.log.debug(`skipping download for ${git.repo}`);
-            continue; // shouldnt continue to try to download if unable to get secret headers
-          } else {
-            return Promise.reject(e.message);
-          }
-        }
-        git = gitFactory.createGit(reqOpt);
-        files = await octokit.request(git.requrl, { headers: reqOpt.headers });
-      } else {
-        newRequests.push(req);
-      }
-
-      if (files) {
-        for (var j = 0; j < files.data.length; j++) {
-          let url = git.getUrl(files.data[j]);
-          if (url) {
-            reqOpt = { ...reqOpt, url: url };
-            let newReq = clone(req);
-            newReq.options = reqOpt;
-            newRequests.push(newReq);
-          }
-        }
-      }
-    }
-
-    objectPath.set(this.data, ['object', 'spec', 'requests'], newRequests);
-    let result = await super.added();
-    return result;
   }
 
   async download(reqOpt) {
