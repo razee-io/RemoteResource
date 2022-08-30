@@ -65,7 +65,7 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
           }
         }
 
-        const Git = require(`./${gitinfo.provider}`);
+        const Git = require(`./git/${gitinfo.provider}`);
         const git = new Git(reqOpt);
         reqOpt = git.getAuthHeaders(reqOpt);
         const files = await octokit.request(git.getReqUrl(), { headers: reqOpt.headers });
