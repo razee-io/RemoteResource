@@ -57,8 +57,8 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
           // error fetching header secrets
           if (optional) {
             this.log.warn(e.message);
-            this.updateRazeeLogs('warn', { controller: 'RemoteResource', warn: e.message, repo: git.repo });
-            this.log.debug(`skipping download for ${git.repo}`);
+            this.updateRazeeLogs('warn', { controller: 'RemoteResource', warn: e.message, repo: gitinfo.repo });
+            this.log.debug(`skipping download for ${gitinfo.repo}`);
             continue; // shouldnt continue to try to download if unable to get secret headers
           } else {
             return Promise.reject(e.message);
@@ -68,20 +68,26 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
         const Git = require(`./git/${gitinfo.provider}`);
         const git = new Git(reqOpt);
         reqOpt = git.getAuthHeaders(reqOpt);
-        const files = await octokit.request(git.getReqUrl(), { headers: reqOpt.headers });
-        for (var j = 0; j < files.data.length; j++) {
-          let url = git.getFileUrl(files.data[j]);
-          if (url) {
-            reqOpt = { ...reqOpt, url: url };
-            let newReq = clone(req);
-            newReq.options = reqOpt;
-            newRequests.push(newReq);
+        try {
+          const files = await octokit.request(git.getReqUrl(), { headers: reqOpt.headers });
+          for (let j = 0; j < files.data.length; j++) {
+            const url = git.getFileUrl(files.data[j]);
+            if (url) {
+              reqOpt = { ...reqOpt, url: url };
+              let newReq = clone(req);
+              newReq.options = reqOpt;
+              newRequests.push(newReq);
+            }
           }
+        } catch (e) {
+          this.log.warn(e.message);
+          this.updateRazeeLogs('warn', { controller: 'RemoteResource', warn: e.message, repo: gitinfo.repo });
+          this.log.debug(`skipping download for ${gitinfo.repo}`);
+          continue;
         }
       } else {
         newRequests.push(req);
       }
-
     }
 
     objectPath.set(this.data, ['object', 'spec', 'requests'], newRequests);
