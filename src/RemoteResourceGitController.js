@@ -43,7 +43,7 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
   // ============ Git Specific Syntax ============
   async added() {
     const requests = objectPath.get(this.data, ['object', 'spec', 'requests'], []);
-    let newRequests = [];
+    const newRequests = [];
     for (let i = 0; i < requests.length; i++) {
       const req = requests[i];
       let reqOpt = clone(req.options);
@@ -74,7 +74,7 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
             const url = git.getFileUrl(files.data[j]);
             if (url) {
               reqOpt = { ...reqOpt, url: url };
-              let newReq = clone(req);
+              const newReq = clone(req);
               newReq.options = reqOpt;
               newRequests.push(newReq);
             }
