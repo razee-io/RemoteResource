@@ -80,10 +80,14 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
             }
           }
         } catch (e) {
-          this.log.warn(e.message);
-          this.updateRazeeLogs('warn', { controller: 'RemoteResource', warn: e.message, repo: gitinfo.repo });
-          this.log.debug(`skipping download for ${gitinfo.repo}`);
-          continue;
+          if (optional) {
+            this.log.warn(e.message);
+            this.updateRazeeLogs('warn', { controller: 'RemoteResource', warn: e.message, repo: gitinfo.repo });
+            this.log.debug(`skipping download for ${gitinfo.repo}`);
+            continue;
+          } else {
+            return Promise.reject(e.message);
+          }
         }
       } else {
         newRequests.push(req);
