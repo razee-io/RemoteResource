@@ -54,12 +54,11 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
         try {
           reqOpt = await this._fetchHeaderSecrets(reqOpt);
         } catch (e) {
-          // error fetching header secrets
-          if (optional) {
+          if (optional && e.code == 404) {
             this.log.warn(e.message);
             this.updateRazeeLogs('warn', { controller: 'RemoteResource', warn: e.message, repo: gitinfo.repo });
             this.log.debug(`skipping download for ${gitinfo.repo}`);
-            continue; // shouldnt continue to try to download if unable to get secret headers
+            continue;
           } else {
             return Promise.reject(e.message);
           }
