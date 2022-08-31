@@ -24,6 +24,7 @@ module.exports = class Git {
     const parse = gh(gitinfo.repo);
     this.host = parse.host;
     this.repo = parse.repo;
+    this.owner = parse.owner;
     this.branch = gitinfo.branch;
     const pattern = parsePath(gitinfo.filePath);
     if (pattern.ext == '') {

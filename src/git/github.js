@@ -24,19 +24,22 @@ module.exports = class Github extends Git {
 
   getReqUrl() {
     let enterprise = '';
-    if (this.host != 'github.com') {
+    if (this.host == 'github.com') {
+      enterprise = 'https://api.github.com';
+    } else {
       enterprise = `http://${this.host}/api/v3`;
     }
     if (this.path.endsWith('/')) {
       this.path = this.path.slice(0, -1);
     }
-    return `GET ${enterprise}/repos/${this.repo}/contents/${this.path}?ref=${this.branch}`;
+    return `${enterprise}/repos/${this.repo}/contents/${this.path}?ref=${this.branch}`;
   }
 
   getAuthHeaders(reqOpt) {
     if (reqOpt.headers.Authorization && !reqOpt.headers.Authorization.includes('token')) {
       reqOpt.headers = { ...reqOpt.headers, Authorization: 'token ' + reqOpt.headers.Authorization };
     }
+    reqOpt.headers = { ...reqOpt.headers, 'User-Agent': this.owner };
     return reqOpt;
   }
 

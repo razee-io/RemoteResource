@@ -25,7 +25,7 @@ module.exports = class Gitlab extends Git {
   }
 
   getReqUrl() { 
-    return `GET https://${this.host}/api/v4/projects/${this.repo}/repository/tree/?path=${this.path}&ref=${this.branch}`;
+    return `https://${this.host}/api/v4/projects/${this.repo}/repository/tree/?path=${this.path}&ref=${this.branch}`;
   }
 
   getAuthHeaders(reqOpt) {

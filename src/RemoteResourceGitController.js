@@ -18,7 +18,6 @@ const loggerFactory = require('./bunyan-api');
 const objectPath = require('object-path');
 const request = require('request-promise-native');
 const clone = require('clone');
-const octokit = require('@octokit/request');
 
 const { BaseDownloadController } = require('@razee/razeedeploy-core');
 
@@ -68,9 +67,10 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
         const git = new Git(reqOpt);
         reqOpt = git.getAuthHeaders(reqOpt);
         try {
-          const files = await octokit.request(git.getReqUrl(), { headers: reqOpt.headers });
-          for (let j = 0; j < files.data.length; j++) {
-            const url = git.getFileUrl(files.data[j]);
+          let files = await request.get(git.getReqUrl(), { headers: reqOpt.headers });
+          files = JSON.parse(files);
+          for (let j = 0; j < files.length; j++) {
+            const url = git.getFileUrl(files[j]);
             if (url) {
               reqOpt = { ...reqOpt, url: url };
               const newReq = clone(req);
@@ -92,10 +92,14 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
         newRequests.push(req);
       }
     }
-
-    objectPath.set(this.data, ['object', 'spec', 'requests'], newRequests);
-    let result = await super.added();
-    return result;
+    
+    if (newRequests.length > 0) {
+      objectPath.set(this.data, ['object', 'spec', 'requests'], newRequests);
+      let result = await super.added();
+      return result;
+    } else {
+      this.log.debug('No files found.');
+    }
   }
 
   // ============ =================== ============
