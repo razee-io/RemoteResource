@@ -24,25 +24,25 @@ module.exports = class Github extends Git {
 
   getReqUrl() {
     let enterprise = '';
-    if (this._host == 'github.com') {
+    if (this.host == 'github.com') {
       enterprise = 'https://api.github.com';
     } else {
-      enterprise = `http://${this._host}/api/v3`;
+      enterprise = `http://${this.host}/api/v3`;
     }
-    return `${enterprise}/repos/${this._repo}/contents/${this._path}?ref=${this._branch}`;
+    return `${enterprise}/repos/${this.repo}/contents/${this.path}?ref=${this.branch}`;
   }
 
   getAuthHeaders(reqOpt) {
     if (reqOpt.headers.Authorization && !reqOpt.headers.Authorization.includes('token')) {
       reqOpt.headers = { ...reqOpt.headers, Authorization: 'token ' + reqOpt.headers.Authorization };
     }
-    reqOpt.headers = { ...reqOpt.headers, 'User-Agent': this._owner };
+    reqOpt.headers = { ...reqOpt.headers, 'User-Agent': this.owner };
     return reqOpt;
   }
 
   getFileUrl(file) {
     let url;
-    if (parsePath(file.name).ext == this._fileExt || file.name == this._filename || this._fileExt == '') { 
+    if (parsePath(file.name).ext == this.fileExt || file.name == this.filename || this.fileExt == '') { 
       if (file.download_url) {
         url = file.download_url;
       }

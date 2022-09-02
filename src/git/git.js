@@ -74,4 +74,12 @@ module.exports = class Git {
   get filename() {
     return this._filename;
   }
+
+  set repo(repo) {
+    this._repo = repo;
+  }
+
+  set path(path) {
+    this._path = path;
+  }
 };
