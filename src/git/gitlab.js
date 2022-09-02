@@ -20,12 +20,12 @@ const parsePath = require('parse-filepath');
 module.exports = class Gitlab extends Git {
   constructor(reqOpt) {
     super(reqOpt);  
-    this.repo = encodeURIComponent(this.repo);
-    this.path = encodeURIComponent(this.path);
+    this._repo = encodeURIComponent(this._repo);
+    this._path = encodeURIComponent(this._path);
   }
 
   getReqUrl() { 
-    return `https://${this.host}/api/v4/projects/${this.repo}/repository/tree/?path=${this.path}&ref=${this.branch}`;
+    return `https://${this._host}/api/v4/projects/${this._repo}/repository/tree/?path=${this._path}&ref=${this._branch}`;
   }
 
   getAuthHeaders(reqOpt) {
@@ -37,12 +37,12 @@ module.exports = class Gitlab extends Git {
 
   getFileUrl(file) {
     let url;
-    if (parsePath(file.name).ext == this.fileExt || file.name == this.filename || this.fileExt == '') {
-      let reqglpath = this.path;
-      if (this.path != '' && !this.path.endsWith('%2F')) {
-        reqglpath = this.path + '%2F';
+    if (parsePath(file.name).ext == this._fileExt || file.name == this._filename || this._fileExt == '') {
+      let reqglpath = this._path;
+      if (this._path != '' && !this._path.endsWith('%2F')) {
+        reqglpath = this._path + '%2F';
       }
-      url = `https://${this.host}/api/v4/projects/${this.repo}/repository/files/${reqglpath}${file.name}/raw?ref=${this.branch}`;
+      url = `https://${this._host}/api/v4/projects/${this._repo}/repository/files/${reqglpath}${file.name}/raw?ref=${this._branch}`;
        
     }
     

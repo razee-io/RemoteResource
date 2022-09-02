@@ -22,25 +22,56 @@ module.exports = class Git {
     const gitinfo = reqOpt.git;
 
     const parse = gh(gitinfo.repo);
-    this.host = parse.host;
-    this.repo = parse.repo;
-    this.owner = parse.owner;
-    this.branch = gitinfo.branch;
+    this._host = parse.host;
+    this._repo = parse.repo;
+    this._owner = parse.owner;
+    this._branch = gitinfo.branch;
     const pattern = parsePath(gitinfo.filePath);
     if (pattern.ext == '') {
       if (gitinfo.filePath.endsWith('*')) {
-        this.path = pattern.dir;
+        this._path = pattern.dir;
       } else {
-        this.path = pattern.path;
+        this._path = pattern.path;
       }
-      this.fileExt = pattern.ext;
+      this._fileExt = pattern.ext;
     } else {
       if (pattern.stem == '*') {
-        this.fileExt = pattern.ext;
+        this._fileExt = pattern.ext;
       } else {
-        this.filename = pattern.base;
+        this._filename = pattern.base;
       }
-      this.path = pattern.dir;
+      this._path = pattern.dir;
     }
+    if (this._path.endsWith('/')) {
+      this._path = this._path.slice(0, -1);
+    }
+  }
+
+  get host(){
+    return this._host;
+  }
+  
+  get repo(){
+    return this._repo;
+  }
+  
+  get owner(){
+    return this._owner;
+  }
+  
+  get branch() {
+    return this._branch;
+  }
+  
+  get path() {
+    return this._path;
+  }
+  
+  get fileExt() {
+    return this._fileExt;
+  }
+  
+  get filename() {
+    return this._filename;
   }
 };
