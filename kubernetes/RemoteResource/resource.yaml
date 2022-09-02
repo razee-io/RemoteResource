@@ -130,7 +130,7 @@ items:
                           type: string
                     backendService:
                       type: string
-                      enum: [generic, s3]
+                      enum: [generic, s3, git]
                     auth:
                       type: object
                       oneOf:
@@ -241,7 +241,7 @@ items:
                               uri:
                                 type: string
                                 format: uri
-                              git: 
+                              git:
                                 type: object
                                 required: [provider, repo, branch, filePath]
                                 properties:
@@ -250,7 +250,7 @@ items:
                                     enum: [github, gitlab]
                                   repo:
                                     type: string
-                                  branch: 
+                                  branch:
                                     type: string
                                   filePath:
                                     type: string

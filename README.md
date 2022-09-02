@@ -71,7 +71,7 @@ spec:
       ...
     backendService:
       type: string
-      enum: [generic, s3]
+      enum: [generic, s3, git]
     auth:
       type: object
       ...

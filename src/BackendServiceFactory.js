@@ -27,6 +27,8 @@ module.exports = class BackendServiceFactory {
     let controllerString;
     if (backendService === 's3') {
       controllerString = 'RemoteResourceS3';
+    } else if (backendService === 'git') {
+      controllerString = 'RemoteResourceGit';
     } else { // generic
       controllerString = 'RemoteResource';
     }
