@@ -118,15 +118,15 @@ clusterAuth:
 **Path:** `.spec.backendService`
 
 **Description:** This field tells RemoteResource which service logic it should
-use. Currently the choices are `generic` and `s3`, where `s3` has special logic
-for using HMAC keys or IAM api keys for fetching access tokens.
+use. Currently the choices are `generic`, `s3` and `git`, where `s3` has special
+logic for using HMAC keys or IAM api keys for fetching access tokens.
 
 **Schema:**
 
 ```yaml
 backendService:
   type: string
-  enum: [generic, s3]
+  enum: [generic, s3, git]
 ```
 
 **Default:** `'generic'`
