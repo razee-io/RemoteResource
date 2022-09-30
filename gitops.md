@@ -89,7 +89,28 @@ Provide:
 * Same as Branch, but use Commit ID in place of branch
 * Get listing of files with commitId/path: `https://api.github.com/repos/{repo}/contents/{path}?ref={commitId}`
 
-## 3. GH Release
+Sample Request Option:
+
+Specify commitID as branch name
+
+```yaml
+requests:
+  - options:
+      git:
+        provider: 'github'
+        repo: "https://github.com/razee-io/RemoteResource.git"
+        branch: "e51187e"
+        filePath: "*.yaml"
+      headers:
+        Authorization:
+          valueFrom:
+            secretKeyRef:
+              name: token
+              namespace: <namespace>
+              key: token
+```
+
+## 3. GH Release (not implemented)
 
 Provide:
 
@@ -104,3 +125,22 @@ Provide:
 
 * Get release assets with response.assets: `https://api.github.com/repos/{owner}/{repo}/releases/tags/{tag}`
 * request to assets.browser_download_url to get file
+
+Sample Request Option:
+
+```yaml
+requests:
+  - options:
+      git:
+        provider: 'github'
+        repo: "https://github.com/razee-io/RemoteResource.git"
+        tag: "2.0.4"
+        asset: "resource.yaml"
+      headers:
+        Authorization:
+          valueFrom:
+            secretKeyRef:
+              name: token
+              namespace: <namespace>
+              key: token
+```
