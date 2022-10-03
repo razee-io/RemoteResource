@@ -120,6 +120,7 @@ clusterAuth:
 **Description:** This field tells RemoteResource which service logic it should
 use. Currently the choices are `generic`, `s3` and `git`, where `s3` has special
 logic for using HMAC keys or IAM api keys for fetching access tokens.
+See [S3](docs/s3.md) or [Git](docs/gitops.md).
 
 **Schema:**
 
@@ -131,128 +132,15 @@ backendService:
 
 **Default:** `'generic'`
 
-### Auth: HMAC
-
-**Path:** `.spec.auth.hmac`
-
-**Description:** Allows you to connect to s3 buckets using an HMAC key/id pair.
-
-**Note:** `.spec.backendService` must be set to `s3` for auth to take effect.
-
-**Schema:**
-
-```yaml
-hmac:
-  type: object
-  allOf:
-    - oneOf:
-        - required: [accessKeyId]
-        - required: [accessKeyIdRef]
-    - oneOf:
-        - required: [secretAccessKey]
-        - required: [secretAccessKeyRef]
-  properties:
-    accessKeyId:
-      type: string
-    accessKeyIdRef:
-      type: object
-      required: [valueFrom]
-      properties:
-        valueFrom:
-          type: object
-          required: [secretKeyRef]
-          properties:
-            secretKeyRef:
-              type: object
-              required: [name, key]
-              properties:
-                name:
-                  type: string
-                namespace:
-                  type: string
-                key:
-                  type: string
-    secretAccessKey:
-      type: string
-    secretAccessKeyRef:
-      type: object
-      required: [valueFrom]
-      properties:
-        valueFrom:
-          type: object
-          required: [secretKeyRef]
-          properties:
-            secretKeyRef:
-              type: object
-              required: [name, key]
-              properties:
-                name:
-                  type: string
-                namespace:
-                  type: string
-                key:
-                  type: string
-```
-
-### Auth: IAM
-
-**Path:** `.spec.auth.iam`
-
-**Description:** Allows you to connect to s3 buckets using an IAM provider and
-api key.
-
-**Note:** `.spec.backendService` must be set to `s3` for auth to take effect.
-
-- Sample values for [IBM Cloud Object Storage](https://cloud.ibm.com/docs/services/cloud-object-storage/cli?topic=cloud-object-storage-curl)
-  - grant_type: "urn:ibm:params:oauth:grant-type:apikey"
-  - url: "[https://iam.cloud.ibm.com/identity/token](https://iam.cloud.ibm.com/identity/token)"
-
-**Schema:**
-
-```yaml
-iam:
-  type: object
-  allOf:
-    - required: [url, grantType]
-    - oneOf:
-        - required: [apiKey]
-        - required: [apiKeyRef]
-  properties:
-    grantType:
-      type: string
-    url:
-      type: string
-      format: uri
-    apiKey:
-      type: string
-    apiKeyRef:
-      type: object
-      required: [valueFrom]
-      properties:
-        valueFrom:
-          type: object
-          required: [secretKeyRef]
-          properties:
-            secretKeyRef:
-              type: object
-              required: [name, key]
-              properties:
-                name:
-                  type: string
-                namespace:
-                  type: string
-                key:
-                  type: string
-```
-
 ### Request Options
 
 **Path:** `.spec.requests[].options`
 
 **Description:** All options defined in an options object will be passed as-is
 to the http request. This means you can specify things like headers for
-authentication in this section. See [RemoteResourceS3](https://github.com/razee-io/RemoteResourceS3)
+authentication in this section. See [S3](docs/s3.md)
 for authenticating with an S3 object store.
+See [Git](docs/gitops.md) for configuring a git request option.
 
 **Note:** You can reference secret data in your header options by setting the value
 of any key in the headers to be `valueFrom.secretKeyRef`.
@@ -346,16 +234,6 @@ optional:
 ```
 
 **Default:** `false`
-
-### Download Directory Contents
-
-- If `.spec.backendService` is set to `s3` and url ends with `/`, we will assume
-  this is an S3 directory and will attempt to download all resources in the directory.
-- Every resource within the directory will be downloaded using the `.spec.requests[].options`
-  provided with the directory url.
-- Path must follow one of:
-  - `http://s3.endpoint.com/bucket/path/to/your/resources/`
-  - `http://bucket.s3.endpoint.com/path/to/your/resources/`
 
 ### Managed Resource Labels
 
