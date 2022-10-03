@@ -95,7 +95,7 @@ provides raw file for filename
 Provide:
 
 * repo url
-* commitID (short or full SHA or release tag name)
+* commitID (short or full SHA or tag name)
 * filePath
 * personal access token (if not public)
 
