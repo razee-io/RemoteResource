@@ -20,7 +20,7 @@ Provide:
 
 Sample RR:
 
-Use `git` as backend service. Provide inputs as git request option. Personal access token should be a secret.
+Use `git` as backend service. Provide inputs as git request option. Personal access token should be provided as a secret or in config map.
 
 ```yaml
 apiVersion: "deploy.razee.io/v1alpha2"
@@ -48,9 +48,9 @@ spec:
                 key: token
 ```
 
-Api (how provided inputs get mapped to api behind the scenes):
+Implementation detail: (i.e. How provided inputs get mapped to api behind the scenes):
 
-* Get listing of files from branch/path provides raw download_url: `https://api.github.com/repos/{repo}/contents/{path}?ref={branch}`
+* `GET https://api.github.com/repos/{repo}/contents/{path}?ref={branch}` provides list of raw download_url(s) for file(s)
 * request to download_url to get file
 
 **Gitlab:**
@@ -74,10 +74,10 @@ requests:
               key: token
 ```
 
-Api (how provided inputs get mapped to api behind the scenes):
+Implementation detail: (i.e. How provided inputs get mapped to api behind the scenes):
 
-* Get listing of files from branch/path provides filenames: `https://{host}/api/v4/projects/{repo}/repository/tree/?path={path}&ref=${branch}`
-* Get raw file with filename: `https://{host}/api/v4/projects/{repo}/repository/files/{path}{filename}/raw?ref={branch}`
+* `GET https://{host}/api/v4/projects/{repo}/repository/tree/?path={path}&ref=${branch}` provides list of filename(s) for file(s)
+* `GET https://{host}/api/v4/projects/{repo}/repository/files/{path}{filename}/raw?ref={branch}` provides raw file for filename
 
 ## 2. Commit ID (SHA or Tag)
 
@@ -132,10 +132,10 @@ requests:
               key: token
 ```
 
-Api (how provided inputs get mapped to api behind the scenes):
+Implementation detail: (i.e. How provided inputs get mapped to api behind the scenes):
 
 * Same as Branch, but use commitId/tag in place of branch
-* Get listing of files with commitId/path: `https://api.github.com/repos/{repo}/contents/{path}?ref={commitId}`
+* `GET https://api.github.com/repos/{repo}/contents/{path}?ref={commitId}` provides list of raw download_url(s) for file(s)
 
 ## 3. GH Release (not implemented)
 
@@ -169,7 +169,7 @@ requests:
               key: token
 ```
 
-Api (how provided inputs get mapped to api behind the scenes):
+Implementation detail: (i.e. How provided inputs get mapped to api behind the scenes):
 
-* Get release assets with response.assets: `https://api.github.com/repos/{owner}/{repo}/releases/tags/{release}`
+* `GET https://api.github.com/repos/{owner}/{repo}/releases/tags/{release}` provides release assets in response.assets
 * request to assets.browser_download_url to get file

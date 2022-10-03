@@ -252,7 +252,7 @@ iam:
 **Description:** All options defined in an options object will be passed as-is
 to the http request. This means you can specify things like headers for
 authentication in this section. See [RemoteResourceS3](https://github.com/razee-io/RemoteResourceS3)
-for authenticating with an S3 object store.
+for authenticating with an S3 object store. See [Git](docs/gitops.md) for configuring a git request option.
 
 **Note:** You can reference secret data in your header options by setting the value
 of any key in the headers to be `valueFrom.secretKeyRef`.
