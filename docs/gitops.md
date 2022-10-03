@@ -1,6 +1,10 @@
 # Git
 
-The RemoteResource operator git backendService supports delivering contents from both the GitHub and GitLab services by [branch](#1-branch-implemented), [tag](#2-commit-id-sha-or-tag), [commit](#2-commit-id-sha-or-tag), or [release artifact](#3-gh-release-not-implemented).
+The RemoteResource operator git backendService supports delivering contents from both the GitHub
+ and GitLab services by [branch](#1-branch-implemented),
+ [tag](#2-commit-id-sha-or-tag),
+ [commit](#2-commit-id-sha-or-tag),
+ or [release artifact](#3-gh-release-not-implemented).
 
 ## 1. Branch (implemented)
 
@@ -20,7 +24,9 @@ Provide:
 
 Sample RR:
 
-Use `git` as backend service. Provide inputs as git request option. Personal access token should be provided as a secret or in config map.
+Use `git` as backend service.
+Provide inputs as git request option.
+Personal access token should be provided as a secret or in config map.
 
 ```yaml
 apiVersion: "deploy.razee.io/v1alpha2"
@@ -48,7 +54,8 @@ spec:
                 key: token
 ```
 
-Implementation detail: (i.e. How provided inputs get mapped to api behind the scenes):
+Implementation detail:
+(i.e. How provided inputs get mapped to api behind the scenes):
 
 * `GET https://api.github.com/repos/{repo}/contents/{path}?ref={branch}` provides list of raw download_url(s) for file(s)
 * request to download_url to get file
@@ -74,7 +81,8 @@ requests:
               key: token
 ```
 
-Implementation detail: (i.e. How provided inputs get mapped to api behind the scenes):
+Implementation detail:
+(i.e. How provided inputs get mapped to api behind the scenes):
 
 * `GET https://{host}/api/v4/projects/{repo}/repository/tree/?path={path}&ref=${branch}` provides list of filename(s) for file(s)
 * `GET https://{host}/api/v4/projects/{repo}/repository/files/{path}{filename}/raw?ref={branch}` provides raw file for filename
@@ -132,7 +140,8 @@ requests:
               key: token
 ```
 
-Implementation detail: (i.e. How provided inputs get mapped to api behind the scenes):
+Implementation detail:
+(i.e. How provided inputs get mapped to api behind the scenes):
 
 * Same as Branch, but use commitId/tag in place of branch
 * `GET https://api.github.com/repos/{repo}/contents/{path}?ref={commitId}` provides list of raw download_url(s) for file(s)
@@ -169,7 +178,8 @@ requests:
               key: token
 ```
 
-Implementation detail: (i.e. How provided inputs get mapped to api behind the scenes):
+Implementation detail:
+(i.e. How provided inputs get mapped to api behind the scenes):
 
 * `GET https://api.github.com/repos/{owner}/{repo}/releases/tags/{release}` provides release assets in response.assets
 * request to assets.browser_download_url to get file
