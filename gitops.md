@@ -16,14 +16,11 @@ Provide:
   * path/to/directory/filename.extension
 * personal access token (if not public)
 
-**Github Api:**
+**Github:**
 
-* Get listing of files from branch/path provides raw download_url: `https://api.github.com/repos/{repo}/contents/{path}?ref={branch}`
-* request to download_url to get file
+Sample RR:
 
-Sample:
-
-Use `git` as backend service
+Use `git` as backend service. Provide inputs as git request option. Personal access token should be a secret.
 
 ```yaml
 apiVersion: "deploy.razee.io/v1alpha2"
@@ -51,12 +48,14 @@ spec:
                 key: token
 ```
 
-**Gitlab Api:**
+Api (how provided inputs get mapped to api behind the scenes):
 
-* Get listing of files from branch/path provides filenames: `https://{host}/api/v4/projects/{repo}/repository/tree/?path={path}&ref=${branch}`
-* Get raw file with filename: `https://{host}/api/v4/projects/{repo}/repository/files/{path}{filename}/raw?ref={branch}`
+* Get listing of files from branch/path provides raw download_url: `https://api.github.com/repos/{repo}/contents/{path}?ref={branch}`
+* request to download_url to get file
 
-Sample Gitlab Request Option:
+**Gitlab:**
+
+Sample Request Option:
 
 ```yaml
 requests:
@@ -75,21 +74,23 @@ requests:
               key: token
 ```
 
-## 2. Commit ID
+Api (how provided inputs get mapped to api behind the scenes):
+
+* Get listing of files from branch/path provides filenames: `https://{host}/api/v4/projects/{repo}/repository/tree/?path={path}&ref=${branch}`
+* Get raw file with filename: `https://{host}/api/v4/projects/{repo}/repository/files/{path}{filename}/raw?ref={branch}`
+
+## 2. Commit ID (SHA or Tag)
 
 Provide:
 
 * repo url
-* commitID (short or full)
+* commitID (short or full SHA or release tag name)
 * filePath
 * personal access token (if not public)
 
-**Github Api:**
+**Github:**
 
-* Same as Branch, but use Commit ID in place of branch
-* Get listing of files with commitId/path: `https://api.github.com/repos/{repo}/contents/{path}?ref={commitId}`
-
-Sample Request Option:
+Sample Request Option with short SHA:
 
 Specify commitID as branch name
 
@@ -110,21 +111,44 @@ requests:
               key: token
 ```
 
+Sample Request Option with Tag:
+
+Specify tag as branch name
+
+```yaml
+requests:
+  - options:
+      git:
+        provider: 'github'
+        repo: "https://github.com/razee-io/RemoteResource.git"
+        branch: "2.0.4"
+        filePath: "*.yaml"
+      headers:
+        Authorization:
+          valueFrom:
+            secretKeyRef:
+              name: token
+              namespace: <namespace>
+              key: token
+```
+
+Api (how provided inputs get mapped to api behind the scenes):
+
+* Same as Branch, but use commitId/tag in place of branch
+* Get listing of files with commitId/path: `https://api.github.com/repos/{repo}/contents/{path}?ref={commitId}`
+
 ## 3. GH Release (not implemented)
+
+To get files from release assets.
 
 Provide:
 
 * repo url
-* release tag
+* release tag name
 * asset
   * *.extension
   * filename.extension
 * personal access token (if not public)
-
-**Api:**
-
-* Get release assets with response.assets: `https://api.github.com/repos/{owner}/{repo}/releases/tags/{tag}`
-* request to assets.browser_download_url to get file
 
 Sample Request Option:
 
@@ -134,7 +158,7 @@ requests:
       git:
         provider: 'github'
         repo: "https://github.com/razee-io/RemoteResource.git"
-        tag: "2.0.4"
+        release: "2.0.4"
         asset: "resource.yaml"
       headers:
         Authorization:
@@ -144,3 +168,8 @@ requests:
               namespace: <namespace>
               key: token
 ```
+
+Api (how provided inputs get mapped to api behind the scenes):
+
+* Get release assets with response.assets: `https://api.github.com/repos/{owner}/{repo}/releases/tags/{release}`
+* request to assets.browser_download_url to get file
