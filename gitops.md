@@ -1,6 +1,6 @@
-# Gitops
+# Git
 
-How to use Remote Resource gitops to deliver by:
+The RemoteResource operator git backendService supports delivering contents from both the GitHub and GitLab services by [branch](#1-branch-implemented), [tag](#2-commit-id-sha-or-tag), [commit](#2-commit-id-sha-or-tag), or [release artifact](#3-gh-release-not-implemented).
 
 ## 1. Branch (implemented)
 
