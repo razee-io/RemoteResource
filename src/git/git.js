@@ -25,7 +25,8 @@ module.exports = class Git {
     this._host = parse.host;
     this._repo = parse.repo;
     this._owner = parse.owner;
-    this._branch = gitinfo.branch;
+    this._ref = gitinfo.ref;
+    this._release = gitinfo.release;
     const pattern = parsePath(gitinfo.filePath);
     if (pattern.ext == '') {
       if (gitinfo.filePath.endsWith('*')) {
@@ -59,8 +60,8 @@ module.exports = class Git {
     return this._owner;
   }
   
-  get branch() {
-    return this._branch;
+  get ref() {
+    return this._ref;
   }
   
   get path() {
@@ -73,5 +74,17 @@ module.exports = class Git {
   
   get filename() {
     return this._filename;
+  }
+
+  get release() {
+    return this._release;
+  }
+
+  getFileArray(files) {
+    return files;
+  }
+
+  getAddlHeaders(reqOpt) {
+    return reqOpt;
   }
 };

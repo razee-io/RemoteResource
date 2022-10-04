@@ -31,10 +31,10 @@ module.exports = class Gitlab extends Git {
   }
 
   get encodedBranch() {
-    return encodeURIComponent(this.branch);
+    return encodeURIComponent(this.ref);
   }
 
-  getReqUrl() { 
+  getReqUrl() {
     return `https://${this.host}/api/v4/projects/${this.encodedRepo}/repository/tree/?path=${this.encodedPath}&ref=${this.encodedBranch}`;
   }
 
@@ -53,7 +53,6 @@ module.exports = class Gitlab extends Git {
         reqglpath += '%2F';
       }
       url = `https://${this.host}/api/v4/projects/${this.encodedRepo}/repository/files/${reqglpath}${encodeURIComponent(file.name)}/raw?ref=${this.encodedBranch}`;
-       
     }
     
     return url;

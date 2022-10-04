@@ -69,10 +69,12 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
         try {
           let files = await request.get(git.getReqUrl(), { headers: reqOpt.headers });
           files = JSON.parse(files);
+          files = git.getFileArray(files);
           for (let j = 0; j < files.length; j++) {
             const url = git.getFileUrl(files[j]);
             if (url) {
               reqOpt = { ...reqOpt, url: url };
+              reqOpt = git.getAddlHeaders(reqOpt);
               const newReq = clone(req);
               newReq.options = reqOpt;
               newRequests.push(newReq);
