@@ -24,7 +24,7 @@ Provide:
 Sample RR with branch:
 
 Use `git` as backend service.
-Provide inputs as git request option, specifying branch as ref.
+Provide inputs as git request options, specifying a branch name as ref.
 Personal access token should be provided as a secret or in config map.
 
 ```yaml
