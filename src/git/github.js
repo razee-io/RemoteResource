@@ -37,6 +37,7 @@ module.exports = class Github extends Git {
     } else if (this.ref) {
       return `${this.enterprise}/repos/${this.repo}/contents/${this.path}?ref=${this.ref}`;
     } else {
+      // Use the default branch if no release or branch specified
       return `${this.enterprise}/repos/${this.repo}/contents/${this.path}`;
     }
   }
