@@ -174,4 +174,5 @@ Implementation detail:
 provides release assets in response.assets
 * `GET https://api.github.com/repos/{repo}/releases/assets/${asset.id}`
 provides raw file for asset.id,
-Note header `Accept: application/octet-stream` set by default.
+Note header `Accept: application/octet-stream` set by default,
+will override Accept header specified by user.
