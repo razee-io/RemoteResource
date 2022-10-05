@@ -42,7 +42,7 @@ spec:
         git:
           provider: 'github'
           repo: "https://github.com/razee-io/RemoteResource.git"
-          ref: "master"
+          ref: "main"
           filePath: "*.yaml"
         headers:
           Authorization:
@@ -174,4 +174,4 @@ Implementation detail:
 provides release assets in response.assets
 * `GET https://api.github.com/repos/{repo}/releases/assets/${asset.id}`
 provides raw file for asset.id,
-must include header `Accept: application/octet-stream`
+Note header `Accept: application/octet-stream` set by default.

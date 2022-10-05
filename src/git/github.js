@@ -34,8 +34,10 @@ module.exports = class Github extends Git {
   getReqUrl() {
     if (this.release) {
       return `${this.enterprise}/repos/${this.repo}/releases/tags/${this.release}`;
-    } else {
+    } else if (this.ref) {
       return `${this.enterprise}/repos/${this.repo}/contents/${this.path}?ref=${this.ref}`;
+    } else {
+      return `${this.enterprise}/repos/${this.repo}/contents/${this.path}`;
     }
   }
 

@@ -244,6 +244,9 @@ items:
                               git:
                                 type: object
                                 required: [provider, repo, filePath]
+                                oneOf:
+                                  - required: [ref]
+                                  - required: [release]
                                 properties:
                                   provider:
                                     type: string
