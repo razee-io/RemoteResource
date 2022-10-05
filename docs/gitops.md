@@ -123,7 +123,7 @@ requests:
               key: token
 ```
 
-Can alternatively specify commitId or tag name as ref.
+Alternatively you can specify a commit ID or tag name as ref.
 
 Implementation detail:
 (i.e. How provided inputs get mapped to api behind the scenes):
