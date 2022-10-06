@@ -16,10 +16,12 @@
 
 const Git = require('./git');
 const parsePath = require('parse-filepath');
+const gh = require('parse-github-url');
 
 module.exports = class Gitlab extends Git {
   constructor(reqOpt) {
     super(reqOpt);
+    this._external = false;
   }
 
   get encodedPath() {
@@ -30,12 +32,28 @@ module.exports = class Gitlab extends Git {
     return encodeURIComponent(this.repo);
   }
 
-  get encodedBranch() {
+  get encodedRef() {
     return encodeURIComponent(this.ref);
   }
 
+  get external() {
+    return this._external;
+  }
+
+  set external(external) {
+    this._external = external;
+  }
+
   getReqUrl() {
-    return `https://${this.host}/api/v4/projects/${this.encodedRepo}/repository/tree/?path=${this.encodedPath}&ref=${this.encodedBranch}`;
+    if (this.release) {
+      return `https://${this.host}/api/v4/projects/${this.encodedRepo}/releases/${this.release}/assets/links`;
+    } else if (this.ref) {
+      return `https://${this.host}/api/v4/projects/${this.encodedRepo}/repository/tree/?path=${this.encodedPath}&ref=${this.encodedRef}`;
+    } else {
+      // Use the default branch if no release or branch specified
+      return `https://${this.host}/api/v4/projects/${this.encodedRepo}/repository/tree/?path=${this.encodedPath}`;
+    }
+    
   }
 
   getAuthHeaders(reqOpt) {
@@ -47,14 +65,37 @@ module.exports = class Gitlab extends Git {
 
   getFileUrl(file) {
     let url;
-    if (parsePath(file.name).ext == this.fileExt || file.name == this.filename || this.fileExt == '') {
-      let reqglpath = this.encodedPath;
-      if (reqglpath != '' && !reqglpath.endsWith('%2F')) {
-        reqglpath += '%2F';
+    if (this.release) {
+      if (parsePath(file.name).ext == this.fileExt || file.name == this.filename) {
+        const parse = gh(file.url);
+        if (file.internal || parse.host == this.host) {
+          const split = parse.filepath.split('/');
+          const ref = split[1];
+          split.splice(0,2);
+          const path = split.join('/');
+          url = `https://${parse.host}/api/v4/projects/${encodeURIComponent(parse.repo)}/repository/files/${encodeURIComponent(path)}/raw?ref=${encodeURIComponent(ref)}`;
+        } else {
+          url = file.url;
+          this.external = true;
+        }
       }
-      url = `https://${this.host}/api/v4/projects/${this.encodedRepo}/repository/files/${reqglpath}${encodeURIComponent(file.name)}/raw?ref=${this.encodedBranch}`;
+    } else {
+      if (parsePath(file.name).ext == this.fileExt || file.name == this.filename || this.fileExt == '') {
+        let reqglpath = this.encodedPath;
+        if (reqglpath != '' && !reqglpath.endsWith('%2F')) {
+          reqglpath += '%2F';
+        }
+        url = `https://${this.host}/api/v4/projects/${this.encodedRepo}/repository/files/${reqglpath}${encodeURIComponent(file.name)}/raw?ref=${this.encodedRef}`;
+      }
     }
     
     return url;
+  }
+
+  getAddlHeaders(reqOpt) {
+    if (this.release && this.external) {
+      reqOpt.headers = {};
+    } 
+    return reqOpt;
   }
 };

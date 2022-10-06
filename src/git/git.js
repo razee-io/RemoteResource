@@ -83,8 +83,4 @@ module.exports = class Git {
   getFileArray(files) {
     return files;
   }
-
-  getAddlHeaders(reqOpt) {
-    return reqOpt;
-  }
 };

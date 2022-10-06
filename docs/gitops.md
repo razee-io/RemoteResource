@@ -3,7 +3,7 @@
 The RemoteResource operator git backendService supports delivering contents from
 both the GitHub and GitLab services by
 [branch, tag, or commit](#1-branch-tag-or-commit),
- or [release artifact](#2-gh-release).
+ or [release artifact](#2-release).
 
 ## 1. Branch, Tag, or Commit
 
@@ -133,7 +133,7 @@ provides list of filename(s) for file(s)
 * `GET https://{host}/api/v4/projects/{repo}/repository/files/{path}{filename}/raw?ref={ref}`
 provides raw file for filename
 
-## 2. GH Release
+## 2. Release
 
 To get files from release assets.
 
@@ -145,6 +145,8 @@ Provide:
   * *.extension
   * filename.extension
 * personal access token (if not public)
+
+**Github:**
 
 Sample Request Option:
 
@@ -176,3 +178,43 @@ provides release assets in response.assets
 provides raw file for asset.id,
 Note header `Accept: application/octet-stream` set by default,
 will override Accept header specified by user.
+
+**Gitlab:**
+
+Release asset links in Gitlab must be a URL that
+returns a valid kubernetes configuration file.
+Ex. `https://raw.githubusercontent.com/razee-io/
+RemoteResource/master/kubernetes/RemoteResource/resource.yaml`
+External URLS should not require headers.
+Gitlab links should be from the same host.
+
+Sample Request Option:
+
+Specify asset as filePath.
+
+```yaml
+requests:
+  - options:
+      git:
+        provider: 'gitlab'
+        repo: "https://gitlab.com/group2842/testproject.git"
+        release: "1.0.1"
+        filePath: "*.yaml"
+      headers:
+        Authorization:
+          valueFrom:
+            secretKeyRef:
+              name: token
+              namespace: <namespace>
+              key: token
+```
+
+Implementation detail:
+(i.e. How provided inputs get mapped to api behind the scenes):
+
+* `GET https://{host}/api/v4/projects/{repo}/releases/{release}/assets/links`
+provides release assets urls
+* If asset url is internal/from the same gitlab host, parse url and
+`GET https://{host}/api/v4/projects/{repo}/repository/files/{path}{filename}/raw?ref={ref}`
+provides raw file, otherwise request to asset.url to get file
+Note: all headers will be removed for external urls
