@@ -185,8 +185,10 @@ Release asset links in Gitlab must be a URL that
 returns a valid kubernetes configuration file.
 Ex. `https://raw.githubusercontent.com/razee-io/
 RemoteResource/master/kubernetes/RemoteResource/resource.yaml`
-External URLS should not require headers.
-Gitlab links should be from the same host.
+External URLS must not require headers.
+Gitlab URLS must be from the same host because the GET
+request for a Gitlab file will include the headers
+specified for the remote resource.
 
 Sample Request Option:
 
