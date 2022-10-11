@@ -243,16 +243,21 @@ items:
                                 format: uri
                               git:
                                 type: object
-                                required: [provider, repo, branch, filePath]
+                                required: [provider, repo, filePath]
+                                oneOf:
+                                  - required: [ref]
+                                  - required: [release]
                                 properties:
                                   provider:
                                     type: string
                                     enum: [github, gitlab]
                                   repo:
                                     type: string
-                                  branch:
+                                  ref:
                                     type: string
                                   filePath:
+                                    type: string
+                                  release:
                                     type: string
                               headers:
                                 type: object

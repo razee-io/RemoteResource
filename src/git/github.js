@@ -19,17 +19,27 @@ const parsePath = require('parse-filepath');
 
 module.exports = class Github extends Git {
   constructor(reqOpt) {
-    super(reqOpt);  
+    super(reqOpt);
+    if (this.host == 'github.com') {
+      this._enterprise = 'https://api.github.com';
+    } else {
+      this._enterprise = `http://${this.host}/api/v3`;
+    }
+  }
+
+  get enterprise() {
+    return this._enterprise;
   }
 
   getReqUrl() {
-    let enterprise = '';
-    if (this.host == 'github.com') {
-      enterprise = 'https://api.github.com';
+    if (this.release) {
+      return `${this.enterprise}/repos/${this.repo}/releases/tags/${this.release}`;
+    } else if (this.ref) {
+      return `${this.enterprise}/repos/${this.repo}/contents/${this.path}?ref=${this.ref}`;
     } else {
-      enterprise = `http://${this.host}/api/v3`;
+      // Use the default branch if no release or branch specified
+      return `${this.enterprise}/repos/${this.repo}/contents/${this.path}`;
     }
-    return `${enterprise}/repos/${this.repo}/contents/${this.path}?ref=${this.branch}`;
   }
 
   getAuthHeaders(reqOpt) {
@@ -42,12 +52,31 @@ module.exports = class Github extends Git {
 
   getFileUrl(file) {
     let url;
-    if (parsePath(file.name).ext == this.fileExt || file.name == this.filename || this.fileExt == '') { 
-      if (file.download_url) {
-        url = file.download_url;
+    if (this.release) {
+      if (parsePath(file.name).ext == this.fileExt || file.name == this.filename) {
+        url = `${this.enterprise}/repos/${this.repo}/releases/assets/${file.id}`;
+      }
+    } else {
+      if (parsePath(file.name).ext == this.fileExt || file.name == this.filename || this.fileExt == '') { 
+        if (file.download_url) {
+          url = file.download_url;
+        }
       }
     }
 
     return url;
+  }
+
+  getFileArray(files) {
+    if (this.release) {
+      return files.assets;
+    } else {
+      return files;
+    }
+  }
+
+  getAddlHeaders(reqOpt) {
+    reqOpt.headers = { ...reqOpt.headers, 'Accept': 'application/octet-stream' };
+    return reqOpt;
   }
 };
