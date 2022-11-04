@@ -31,7 +31,10 @@ async function createNewEventHandler(kc) {
       kubeClass: kc,
       logger: log,
       requestOptions: { qs: { timeoutSeconds: process.env.CRD_WATCH_TIMEOUT_SECONDS || 300 } },
-      livenessInterval: true
+      livenessInterval: true,
+      options: {
+        reconcileByDefault: process.env.RR_RECONCILE_BY_DEFAULT || true
+      }
     };
     result = new EventHandler(params);
   } else {
