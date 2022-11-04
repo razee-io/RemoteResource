@@ -20,20 +20,17 @@ const objectPath = require('object-path');
 module.exports = class BackendServiceFactory {
   constructor(params) {
     this.eventParams = params;
+    const backendService = objectPath.get(this.eventParams, 'eventData.object.spec.backendService', '').toLowerCase();
+
+    let controllerString = 'RemoteResource';
+    if (backendService == 's3') controllerString = 'RemoteResourceS3';
+    if (backendService == 'git') controllerString = 'RemoteResourceGit';
+    this.controllerString = controllerString;
   }
 
   async execute() {
-    const backendService = objectPath.get(this.eventParams, 'eventData.object.spec.backendService', '').toLowerCase();
-    let controllerString;
-    if (backendService === 's3') {
-      controllerString = 'RemoteResourceS3';
-    } else if (backendService === 'git') {
-      controllerString = 'RemoteResourceGit';
-    } else { // generic
-      controllerString = 'RemoteResource';
-    }
-    this.eventParams.logger.info(`Running ${controllerString}Controller.`);
-    const Controller = require(`./${controllerString}Controller`);
+    this.eventParams.logger.info(`Running ${this.controllerString}Controller.`);
+    const Controller = require(`./${this.controllerString}Controller`);
     const controller = new Controller(this.eventParams);
     return await controller.execute();
   }
