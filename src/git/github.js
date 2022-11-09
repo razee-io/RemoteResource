@@ -43,7 +43,7 @@ module.exports = class Github extends Git {
   }
 
   getAuthHeaders(reqOpt) {
-    if (reqOpt.headers.Authorization && !reqOpt.headers.Authorization.includes('token')) {
+    if (reqOpt.headers && reqOpt.headers.Authorization && !reqOpt.headers.Authorization.includes('token')) {
       reqOpt.headers = { ...reqOpt.headers, Authorization: 'token ' + reqOpt.headers.Authorization };
     }
     reqOpt.headers = { ...reqOpt.headers, 'User-Agent': this.owner };

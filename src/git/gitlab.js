@@ -57,7 +57,7 @@ module.exports = class Gitlab extends Git {
   }
 
   getAuthHeaders(reqOpt) {
-    if (reqOpt.headers.Authorization && !reqOpt.headers.Authorization.includes('Bearer')) {
+    if (reqOpt.headers && reqOpt.headers.Authorization && !reqOpt.headers.Authorization.includes('Bearer')) {
       reqOpt.headers = { ...reqOpt.headers, Authorization: 'Bearer ' + reqOpt.headers.Authorization };
     }
     return reqOpt;
