@@ -44,6 +44,7 @@ module.exports = class RemoteResourceS3Controller extends BaseDownloadController
       const url = new URL(objectPath.get(r, 'options.url'));
       if (url.pathname.endsWith('/')) { //This is an S3 bucket
         let additionalRequests = await this._getBucketObjectRequestList(r);
+        additionalRequests.forEach( newReq => newReq.splitRequestId = hash(r) ); // By setting splitRequestId, all requests split from a single original request will all be attempted before allowing failures to abort
         newRequests = newRequests.concat(additionalRequests);
       } else {
         newRequests.push(r);

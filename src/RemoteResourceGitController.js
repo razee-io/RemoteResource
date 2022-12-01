@@ -18,6 +18,7 @@ const loggerFactory = require('./bunyan-api');
 const objectPath = require('object-path');
 const request = require('request-promise-native');
 const clone = require('clone');
+const hash = require('object-hash');
 
 const { BaseDownloadController } = require('@razee/razeedeploy-core');
 
@@ -48,7 +49,7 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
       let reqOpt = clone(req.options);
       const optional = req.optional || false;
       const gitinfo = objectPath.get(req, 'options.git');
-      
+
       if (gitinfo) {
         try {
           reqOpt = await this._fetchHeaderSecrets(reqOpt);
@@ -77,6 +78,7 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
               reqOpt = git.getAddlHeaders(reqOpt);
               const newReq = clone(req);
               newReq.options = reqOpt;
+              newReq.splitRequestId = hash(req);  // By setting splitRequestId, all requests split from a single original request will all be attempted before allowing failures to abort
               newRequests.push(newReq);
             }
           }
@@ -94,7 +96,7 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
         newRequests.push(req);
       }
     }
-    
+
     if (newRequests.length > 0) {
       objectPath.set(this.data, ['object', 'spec', 'requests'], newRequests);
       let result = await super.added();
