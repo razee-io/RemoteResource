@@ -54,6 +54,7 @@ module.exports = class MockKRM extends MockKubeResourceMeta {
   }
 
   post(file) {
+    console.log(file);
     const uri = this.uri({ name: objectPath.get(file, 'metadata.name'), namespace: objectPath.get(file, 'metadata.namespace') });
     this._logger.debug(`Post ${uri}`);
     this.kubeData[uri] = file;
@@ -63,7 +64,6 @@ module.exports = class MockKRM extends MockKubeResourceMeta {
   mergePatch(name, ns, mPatch) {
     const uri = this.uri({ name: name, namespace: ns });   
     this._logger.debug(`MergePatch ${uri}`);
-
     let ret;
     if (this.kubeData[uri].object) {
       this.kubeData[uri].object = merge(this.kubeData[uri].object, mPatch);
