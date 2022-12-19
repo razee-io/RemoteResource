@@ -1,28 +1,61 @@
 const assert = require('chai').assert;
-// const Controller = require('../lib/MockRRController');
-// const GitController = require('../lib/MockRRGitController');
-const Controller = require('../src/RemoteResourceController');
-// const Controller = require('../src/BackendServiceFactory');
-const ControllerString = 'RemoteResource';
-const log = require('../src/bunyan-api').createLogger(ControllerString);
 const { KubeClass } = require('@razee/kubernetes-util');
-
-// const rewire = require('rewire');
 const clone = require('clone');
 const objectPath = require('object-path');
 const sinon = require('sinon');
 const fs = require('fs-extra');
+const xml2js = require('xml2js');
 const MockKRM = require('./MockKRM');
-
+const request = require('request-promise-native');
 let krmCache = [];
 
-
 describe('#RemoteResourceController', async function() {
+  beforeEach(function() {
+    sinon.stub(request, 'get').callsFake(getFilesStub);
+  });
+  afterEach(function() {
+    sinon.restore();
+    krmCache = [];
+  });
+
+  let getFilesStub = function () {
+    let files = [{ name: 'test-config.yaml', download_url: 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config.yaml'},
+      { name: 'teset-config-update.yaml', download_url: 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-update.yaml'},
+      { name: 'test-config-falserec.yaml', download_url: 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-falserec.yaml'}];
+
+    files = JSON.stringify(files);
+    return files;
+    
+  };
+
   let downloadStub = async function(reqOpt) {
-    let split = reqOpt.url.split('/');
-    let filename = split[split.length -1];
-    const file = await fs.readFile(`test/test-configs/${filename}`);
-    return {statusCode: 200, body: file};
+    if (reqOpt.url.endsWith('yaml')) {
+      let split = reqOpt.url.split('/');
+      let filename = split[split.length -1];
+      const file = await fs.readFile(`test/test-configs/${filename}`);
+      return {statusCode: 200, body: file};
+    } else { // for s3
+      let body = {
+        ListBucketResult: {
+          '$': { xmlns: 'http://s3.amazonaws.com/doc/2006-03-01/' },
+          Name: [ 'bucket' ],
+          Contents: [ 
+            {
+              Key: [ 'test-config.yaml' ]
+            },
+            {
+              Key: [ 'test-config-update.yaml' ]
+            },
+            {
+              Key: [ 'test-config-falserec.yaml' ]
+            } 
+          ]
+        }
+      };
+      var builder = new xml2js.Builder();
+      var xml = builder.buildObject(body);
+      return { statusCode: 200, body: xml};
+    }
   };
 
   let deleteStub = async function (child) {
@@ -90,13 +123,20 @@ describe('#RemoteResourceController', async function() {
   };
 
   function setupController(eventData, url = '/default/rr') {
+    const backendService = objectPath.get(eventData, 'object.spec.backendService', '').toLowerCase();
+    let controllerString = 'RemoteResource';
+    if (backendService == 's3') controllerString = 'RemoteResourceS3';
+    if (backendService == 'git') controllerString = 'RemoteResourceGit';
+
+    const log = require('../src/bunyan-api').createLogger(controllerString);
+
     const kc = new KubeClass();
     sinon.stub(kc, 'getKubeResourceMeta').callsFake(getKRMstub);
 
     let kubeData = {};
     kubeData[url] = clone(eventData);
 
-    let resourceMeta = kc.getKubeResourceMeta('deploy.razee.io/v1alpha2', ControllerString, '', kubeData);
+    let resourceMeta = kc.getKubeResourceMeta('deploy.razee.io/v1alpha2', controllerString, '', kubeData);
 
     eventData.type = 'ADDED';
     let params = {
@@ -106,6 +146,7 @@ describe('#RemoteResourceController', async function() {
       logger: log
     };
 
+    const Controller = require(`../src/${controllerString}Controller`);
     const controller = new Controller(params);
     sinon.stub(controller, 'download').callsFake(downloadStub);
     sinon.stub(controller, '_deleteChild').callsFake(deleteStub);
@@ -281,6 +322,126 @@ describe('#RemoteResourceController', async function() {
         
     }
   };
+
+  const eventDataGit = {
+    object: {
+      apiVersion: 'deploy.razee.io/v1alpha2',
+      kind: 'RemoteResource',
+      metadata: {
+        name: 'rr',
+        namespace: 'default'
+      },
+      spec: {
+        clusterAuth: {
+          impersonateUser: 'razeedeploy'
+        },
+        backendService: 'git',
+        requests: [
+          {
+            options: {
+              git: {
+                provider: 'github',
+                repo: 'https://github.com/razee-io/RemoteResource.git',
+                ref: 'tests',
+                filePath: 'test/test-configs/test-config.yaml'
+              }
+            }
+          }
+        ]
+      }
+        
+    }
+  };
+
+  const eventDataGit1 = {
+    object: {
+      apiVersion: 'deploy.razee.io/v1alpha2',
+      kind: 'RemoteResource',
+      metadata: {
+        name: 'rr',
+        namespace: 'default'
+      },
+      spec: {
+        clusterAuth: {
+          impersonateUser: 'razeedeploy'
+        },
+        backendService: 'git',
+        requests: [
+          {
+            options: {
+              git: {
+                provider: 'github',
+                repo: 'https://github.com/razee-io/RemoteResource.git',
+                ref: 'tests',
+                filePath: 'test/test-configs/*.yaml'
+              }
+            }
+          }
+        ]
+      }
+        
+    }
+  };
+
+  const eventDataS3 = {
+    object: {
+      apiVersion: 'deploy.razee.io/v1alpha2',
+      kind: 'RemoteResource',
+      metadata: {
+        name: 'rr',
+        namespace: 'default'
+      },
+      spec: {
+        clusterAuth: {
+          impersonateUser: 'razeedeploy'
+        },
+        backendService: 's3',
+        iam: {
+          url: 'https://iam.cloud.ibm.com/identity/token',
+          grantType: 'urn:ibm:params:oauth:grant-type:apikey',
+          apiKey: 'testApiKey'
+        },
+        requests: [
+          {
+            options: {
+              url: 'https://s3.us.cloud-object-storage.appdomain.cloud/bucket/test-config.yaml'
+            }
+          }
+        ]
+      }
+        
+    }
+  };
+
+  const eventDataS3_1 = {
+    object: {
+      apiVersion: 'deploy.razee.io/v1alpha2',
+      kind: 'RemoteResource',
+      metadata: {
+        name: 'rr',
+        namespace: 'default'
+      },
+      spec: {
+        clusterAuth: {
+          impersonateUser: 'razeedeploy'
+        },
+        backendService: 's3',
+        iam: {
+          url: 'https://iam.cloud.ibm.com/identity/token',
+          grantType: 'urn:ibm:params:oauth:grant-type:apikey',
+          apiKey: 'testApiKey'
+        },
+        requests: [
+          {
+            options: {
+              url: 'https://s3.us.cloud-object-storage.appdomain.cloud/bucket/'
+            }
+          }
+        ]
+      }
+        
+    }
+  };
   
   it('Apply single request option', async function () {
     const controller = setupController(eventData);
@@ -290,8 +451,6 @@ describe('#RemoteResourceController', async function() {
     assert.equal(krmCache[1]._kind, 'ConfigMap'); // ConfigMap krm created
     assert(krmCache[1].kubeData['/default/config-test']); //child applied
     assert.equal(krmCache[1].kubeData['/default/config-test'].metadata.annotations['deploy.razee.io.parent'], '/default/rr'); // child has parent link
-    
-    krmCache = [];
   });
 
   it('Update single request option reconcile children', async function () {
@@ -316,8 +475,6 @@ describe('#RemoteResourceController', async function() {
     assert(krmCache[1].kubeData['/default/config-test-update']); // new child applied
     assert.equal(krmCache[1].kubeData['/default/config-test'], undefined); // old child deleted
     assert.equal(krmCache[1].kubeData['/default/config-test-update'].metadata.annotations['deploy.razee.io.parent'], '/default/rr'); // new child has parent link
-
-    krmCache = [];
   });
 
   it('Multiple request options', async function () {
@@ -331,8 +488,6 @@ describe('#RemoteResourceController', async function() {
     assert(krmCache[1].kubeData['/default/config-test-update']); // child2 applied
     assert.equal(krmCache[1].kubeData['/default/config-test'].metadata.annotations['deploy.razee.io.parent'], '/default/rr'); // child1 has parent link
     assert.equal(krmCache[1].kubeData['/default/config-test-update'].metadata.annotations['deploy.razee.io.parent'], '/default/rr'); // child2 has parent link
-
-    krmCache = [];
   });
 
   it('Update single request option reconcile children false', async function () {
@@ -358,8 +513,6 @@ describe('#RemoteResourceController', async function() {
     assert(krmCache[1].kubeData['/default/config-test'], undefined); // old child still exists
     assert.equal(krmCache[1].kubeData['/default/config-test-update'].metadata.annotations['deploy.razee.io.parent'], '/default/rr'); // new child has parent link
     assert.isNull(krmCache[1].kubeData['/default/config-test'].metadata.annotations['deploy.razee.io.parent']); // old child parent link removed
-
-    krmCache = [];
   });
 
   it('Invalid file should error', async function () {
@@ -369,7 +522,6 @@ describe('#RemoteResourceController', async function() {
 
     assert(krmCache[0].kubeData['/default/rr'].object.status['razee-logs'].error['06f4c168242dd60e347e977a1b179aabead9038f']); // should have no such file error hash
     assert.equal(krmCache[0].kubeData['/default/rr'].object.status['razee-logs'].error['06f4c168242dd60e347e977a1b179aabead9038f'], 'uri: https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/invalid-config.yaml, statusCode: undefined, message: ENOENT: no such file or directory, open \'test/test-configs/invalid-config.yaml\'');
-    krmCache = [];
   });
 
   it('Multiple parents applying same child should skip apply', async function () {
@@ -384,8 +536,6 @@ describe('#RemoteResourceController', async function() {
     assert.equal(krmCache[1]._kind, 'ConfigMap'); // ConfigMap krm created
     assert(krmCache[1].kubeData['/default/config-test']); //child applied
     assert.equal(krmCache[1].kubeData['/default/config-test'].metadata.annotations['deploy.razee.io.parent'], '/default/rr'); // child has first parent link
-
-    krmCache = [];
   });
 
   it('Requests with optional flag should attempt apply all', async function () {
@@ -398,103 +548,54 @@ describe('#RemoteResourceController', async function() {
     assert(krmCache[1].kubeData['/default/config-test']); //child applied
     assert.equal(krmCache[1].kubeData['/default/config-test'].metadata.annotations['deploy.razee.io.parent'], '/default/rr'); // child has parent link
     assert.equal(krmCache[0].kubeData['/default/rr'].object.status['razee-logs'].warn['485f9f111adca66ff5a65f9e820bd88407af8147'].warn, '1 optional resource(s) failed to process.. skipping reconcileChildren'); // logs should have optional failure warnings
+  });
 
-    krmCache = [];
-  }); 
+  describe('#RRGitController', async function() { 
+    it('Apply single github request option', async function () {
+      const controller = setupController(eventDataGit);
+      await controller.execute();
+  
+      assert(krmCache[0].kubeData['/default/rr'].object.status.children['/default/config-test']); // child is indicated on parent
+      assert.equal(krmCache[1]._kind, 'ConfigMap'); // ConfigMap krm created
+      assert(krmCache[1].kubeData['/default/config-test']); //child applied
+      assert.equal(krmCache[1].kubeData['/default/config-test'].metadata.annotations['deploy.razee.io.parent'], '/default/rr'); // child has parent link
+    });
+  
+    it('Apply github request option with multiple files', async function () {
+      const controller = setupController(eventDataGit1);
+      await controller.execute();
+  
+      assert(krmCache[0].kubeData['/default/rr'].object.status.children['/default/config-test']); // child1 is indicated on parent
+      assert(krmCache[0].kubeData['/default/rr'].object.status.children['/default/config-test-update']); // child2 is indicated on parent
+      assert(krmCache[1].kubeData['/default/config-test']); //child1 applied
+      assert(krmCache[1].kubeData['/default/config-test-update']); // child2 applied
+      assert.equal(krmCache[1].kubeData['/default/config-test'].metadata.annotations['deploy.razee.io.parent'], '/default/rr'); // child1 has parent link
+      assert.equal(krmCache[1].kubeData['/default/config-test-update'].metadata.annotations['deploy.razee.io.parent'], '/default/rr'); // child2 has parent link
+    });
+  });
+
+  describe('#RRGitController', async function() { 
+    it('Apply single s3 request option', async function () {
+      const controller = setupController(eventDataS3);
+      await controller.execute();
+  
+      assert(krmCache[0].kubeData['/default/rr'].object.status.children['/default/config-test']); // child is indicated on parent
+      assert.equal(krmCache[1]._kind, 'ConfigMap'); // ConfigMap krm created
+      assert(krmCache[1].kubeData['/default/config-test']); //child applied
+      assert.equal(krmCache[1].kubeData['/default/config-test'].metadata.annotations['deploy.razee.io.parent'], '/default/rr'); // child has parent link
+    });
+
+    it('Apply s3 request option with multiple files', async function () {
+      const controller = setupController(eventDataS3_1);
+      await controller.execute();
+  
+      assert(krmCache[0].kubeData['/default/rr'].object.status.children['/default/config-test']); // child1 is indicated on parent
+      assert(krmCache[0].kubeData['/default/rr'].object.status.children['/default/config-test-update']); // child2 is indicated on parent
+      assert(krmCache[1].kubeData['/default/config-test']); //child1 applied
+      assert(krmCache[1].kubeData['/default/config-test-update']); // child2 applied
+      assert.equal(krmCache[1].kubeData['/default/config-test'].metadata.annotations['deploy.razee.io.parent'], '/default/rr'); // child1 has parent link
+      assert.equal(krmCache[1].kubeData['/default/config-test-update'].metadata.annotations['deploy.razee.io.parent'], '/default/rr'); // child2 has parent link
+    });
+  });
 });
 
-// describe('#RRGitController', async function() {
-//   const eventData = {
-//     object: {
-//       apiVersion: 'deploy.razee.io/v1alpha2',
-//       kind: 'RemoteResource',
-//       metadata: {
-//         name: 'rr',
-//         namespace: 'default'
-//       },
-//       spec: {
-//         clusterAuth: {
-//           impersonateUser: 'razeedeploy'
-//         },
-//         backendService: 'git',
-//         requests: [
-//           {
-//             options: {
-//               git: {
-//                 provider: 'github',
-//                 repo: 'https://github.com/razee-io/RemoteResource.git',
-//                 ref: 'master',
-//                 filePath: 'test/test-configs/test-config.yaml'
-//               }
-//             }
-//           }
-//         ]
-//       }
-        
-//     }
-//   };
-
-//   const eventData1 = {
-//     object: {
-//       apiVersion: 'deploy.razee.io/v1alpha2',
-//       kind: 'RemoteResource',
-//       metadata: {
-//         name: 'rr',
-//         namespace: 'default'
-//       },
-//       spec: {
-//         clusterAuth: {
-//           impersonateUser: 'razeedeploy'
-//         },
-//         backendService: 'git',
-//         requests: [
-//           {
-//             options: {
-//               git: {
-//                 provider: 'github',
-//                 repo: 'https://github.com/razee-io/RemoteResource.git',
-//                 ref: 'master',
-//                 filePath: 'test/test-configs/*.yaml'
-//               }
-//             }
-//           }
-//         ]
-//       }
-        
-//     }
-//   };
-
-//   it('Apply single github request option', async function () {
-//     let kubeData = {};
-//     kubeData['/default/rr'] = clone(eventData);
-
-//     const controller = new GitController(eventData, kubeData);
-//     await controller.execute();
-//     const krmCache = controller.getKrmCache();
-
-//     assert(krmCache[0].kubeData['/default/rr'].object.status.children['/default/config-test']); // child is indicated on parent
-//     assert.equal(krmCache[1]._kind, 'ConfigMap'); // ConfigMap krm created
-//     assert(krmCache[1].kubeData['/default/config-test']); //child applied
-//     assert.equal(krmCache[1].kubeData['/default/config-test'].metadata.annotations['deploy.razee.io.parent'], '/default/rr'); // child has parent link
-
-//     controller.clearKrmCache();
-//   });
-
-//   it('Apply github request option with multiple files', async function () {
-//     let kubeData = {};
-//     kubeData['/default/rr'] = clone(eventData1);
-
-//     const controller = new GitController(eventData1, kubeData);
-//     await controller.execute();
-//     const krmCache = controller.getKrmCache();
-
-//     assert(krmCache[0].kubeData['/default/rr'].object.status.children['/default/config-test']); // child1 is indicated on parent
-//     assert(krmCache[0].kubeData['/default/rr'].object.status.children['/default/config-test-update']); // child2 is indicated on parent
-//     assert(krmCache[1].kubeData['/default/config-test']); //child1 applied
-//     assert(krmCache[1].kubeData['/default/config-test-update']); // child2 applied
-//     assert.equal(krmCache[1].kubeData['/default/config-test'].metadata.annotations['deploy.razee.io.parent'], '/default/rr'); // child1 has parent link
-//     assert.equal(krmCache[1].kubeData['/default/config-test-update'].metadata.annotations['deploy.razee.io.parent'], '/default/rr'); // child2 has parent link
-
-//     controller.clearKrmCache();
-//   });
-// });
