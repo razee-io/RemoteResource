@@ -598,4 +598,3 @@ describe('#RemoteResourceController', async function() {
     });
   });
 });
-
