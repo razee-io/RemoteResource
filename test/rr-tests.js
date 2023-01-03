@@ -13,9 +13,10 @@ describe('#RemoteResourceController', async function() {
   beforeEach(function() {
     sinon.stub(request, 'get').callsFake(getFilesStub);
   });
-  afterEach(function() {
+  afterEach(function(done) {
     sinon.restore();
     krmCache = [];
+    done();
   });
 
   let getFilesStub = function () {
