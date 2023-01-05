@@ -2,6 +2,7 @@ const assert = require('chai').assert;
 const request = require('request-promise-native');
 const sinon = require('sinon');
 const xml2js = require('xml2js');
+const hash = require('object-hash');
 const { KubeClass } = require('@razee/kubernetes-util');
 const { BaseDownloadController, MockKubeResourceMeta} = require('@razee/razeedeploy-core');
 const Factory = require('../src/BackendServiceFactory');
@@ -20,9 +21,10 @@ describe('#RemoteResource', async function() {
   });
 
   function getFilesStub() {
+    // the download urls are real, but the requests are stubbed
     let files = [{ name: 'test-config.yaml', download_url: 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config.yaml'},
-      { name: 'teset-config-update.yaml', download_url: 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-update.yaml'},
-      { name: 'test-config-falserec.yaml', download_url: 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-falserec.yaml'}];
+      { name: 'teset-config-1.yaml', download_url: 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-1.yaml'},
+      { name: 'test-config-2.yaml', download_url: 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-2.yaml'}];
 
     files = JSON.stringify(files);
     return files;
@@ -42,10 +44,10 @@ describe('#RemoteResource', async function() {
             Key: [ 'test-config.yaml' ]
           },
           {
-            Key: [ 'test-config-update.yaml' ]
+            Key: [ 'test-config-1.yaml' ]
           },
           {
-            Key: [ 'test-config-falserec.yaml' ]
+            Key: [ 'test-config-2.yaml' ]
           } 
         ]
       }
@@ -218,13 +220,20 @@ describe('#RemoteResource', async function() {
     }
   };
 
+  const eventDataS3_1_fixedUrl_request = {
+    options: {
+      url: 'https://s3.us.cloud-object-storage.appdomain.cloud/bucket?prefix='
+    }
+  };
+
+  // the download urls are real, but the requests are stubbed
   const gitUrls = ['https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config.yaml', 
-    'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-update.yaml',
-    'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-falserec.yaml'];
+    'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-1.yaml',
+    'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-2.yaml'];
   
   const s3Urls = ['https://s3.us.cloud-object-storage.appdomain.cloud/bucket/test-config.yaml',
-    'https://s3.us.cloud-object-storage.appdomain.cloud/bucket/test-config-update.yaml',
-    'https://s3.us.cloud-object-storage.appdomain.cloud/bucket/test-config-falserec.yaml'];
+    'https://s3.us.cloud-object-storage.appdomain.cloud/bucket/test-config-1.yaml',
+    'https://s3.us.cloud-object-storage.appdomain.cloud/bucket/test-config-2.yaml'];
 
   it('Create generic RemoteResourceController', async function () {
     // backendServiceFactory should create RemoteResourceController for generic backendService
@@ -239,7 +248,7 @@ describe('#RemoteResource', async function() {
     await controller.added();
     const requests = controller.data.object.spec.requests;
 
-    assert.equal(requests[0].options.url, 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config.yaml');
+    assert.equal(requests[0].options.url, 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config.yaml'); // the download url is real, but request is stubbed
     assert.deepEqual(requests[0].options.headers, { 'User-Agent': 'razee-io', Accept: 'application/octet-stream' });
     assert(requests[0].splitRequestId);
   });
@@ -248,6 +257,7 @@ describe('#RemoteResource', async function() {
     // RRGitController added() should correctly assemble request options for multiple files
     const controller = setupController(eventDataGit1);
     assert(controller instanceof RemoteResourceGitController);
+    const sri = hash(eventDataGit1.object.spec.requests[0]);
     await controller.added();
     const requests = controller.data.object.spec.requests;
 
@@ -255,7 +265,7 @@ describe('#RemoteResource', async function() {
     for (let i = 0; i < requests.length; i++) {
       assert.equal(requests[i].options.url, gitUrls[i]);
       assert.deepEqual(requests[i].options.headers, { 'User-Agent': 'razee-io', Accept: 'application/octet-stream' });
-      assert.equal(requests[i].splitRequestId, 'a97a0bb3df8e4ae944382adbca0ec1eff7e28b37');
+      assert.equal(requests[i].splitRequestId, sri); // splitRequestIds should be the same to ensure applying all files in the group is attempted
     }
   });
 
@@ -274,14 +284,14 @@ describe('#RemoteResource', async function() {
     const controller = setupController(eventDataS3_1);
     sinon.stub(controller, 'download').callsFake(s3downloadStub);
     assert(controller instanceof RemoteResourceS3Controller);
+    const sri = hash(eventDataS3_1_fixedUrl_request); //S3 fixes url before hashing for splitRequestId
     await controller.added();
     const requests = controller.data.object.spec.requests;
 
     assert.equal(requests.length, 3);
     for (let i = 0; i < requests.length; i++) {
       assert.equal(requests[i].options.url, s3Urls[i]);
-      assert.equal(requests[0].splitRequestId, '8ae25a1660f9ea141ecda2b8473a6c1040895840');
-
+      assert.equal(requests[i].splitRequestId, sri); // splitRequestIds should be the same to ensure applying all files in the group is attempted
     }
   });
 });
