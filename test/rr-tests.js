@@ -19,21 +19,21 @@ describe('#RemoteResource', async function() {
     done();
   });
 
-  let getFilesStub = function () {
+  function getFilesStub() {
     let files = [{ name: 'test-config.yaml', download_url: 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config.yaml'},
       { name: 'teset-config-update.yaml', download_url: 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-update.yaml'},
       { name: 'test-config-falserec.yaml', download_url: 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-falserec.yaml'}];
 
     files = JSON.stringify(files);
     return files;
-  };
+  }
 
-  let addedStub = function () {
+  function addedStub() {
     return;
-  };
+  }
 
-  let s3downloadStub = async function() {
-    let body = {
+  function s3downloadStub() {
+    const body = {
       ListBucketResult: {
         '$': { xmlns: 'http://s3.amazonaws.com/doc/2006-03-01/' },
         Name: [ 'bucket' ],
@@ -50,10 +50,10 @@ describe('#RemoteResource', async function() {
         ]
       }
     };
-    var builder = new xml2js.Builder();
-    var xml = builder.buildObject(body);
+    const builder = new xml2js.Builder();
+    const xml = builder.buildObject(body);
     return { statusCode: 200, body: xml};
-  };
+  }
 
   function setupController(eventData) {
     const log = require('../src/bunyan-api').createLogger('RemoteResource');
@@ -218,6 +218,14 @@ describe('#RemoteResource', async function() {
     }
   };
 
+  const gitUrls = ['https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config.yaml', 
+    'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-update.yaml',
+    'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-falserec.yaml'];
+  
+  const s3Urls = ['https://s3.us.cloud-object-storage.appdomain.cloud/bucket/test-config.yaml',
+    'https://s3.us.cloud-object-storage.appdomain.cloud/bucket/test-config-update.yaml',
+    'https://s3.us.cloud-object-storage.appdomain.cloud/bucket/test-config-falserec.yaml'];
+
   it('Create generic RemoteResourceController', async function () {
     // backendServiceFactory should create RemoteResourceController for generic backendService
     const controller = setupController(eventData);
@@ -244,17 +252,11 @@ describe('#RemoteResource', async function() {
     const requests = controller.data.object.spec.requests;
 
     assert.equal(requests.length, 3);
-    assert.equal(requests[0].options.url, 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config.yaml');
-    assert.deepEqual(requests[0].options.headers, { 'User-Agent': 'razee-io', Accept: 'application/octet-stream' });
-
-    assert.equal(requests[1].options.url, 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-update.yaml');
-    assert.deepEqual(requests[1].options.headers, { 'User-Agent': 'razee-io', Accept: 'application/octet-stream' });
-
-    assert.equal(requests[2].options.url, 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-falserec.yaml');
-    assert.deepEqual(requests[2].options.headers, { 'User-Agent': 'razee-io', Accept: 'application/octet-stream' });
-
-    assert.equal(requests[0].splitRequestId, requests[1].splitRequestId);
-    assert.equal(requests[0].splitRequestId, requests[2].splitRequestId);
+    for (let i = 0; i < requests.length; i++) {
+      assert.equal(requests[i].options.url, gitUrls[i]);
+      assert.deepEqual(requests[i].options.headers, { 'User-Agent': 'razee-io', Accept: 'application/octet-stream' });
+      assert.equal(requests[i].splitRequestId, 'a97a0bb3df8e4ae944382adbca0ec1eff7e28b37');
+    }
   });
 
   it('RRS3Controller single file request', async function() {
@@ -276,11 +278,10 @@ describe('#RemoteResource', async function() {
     const requests = controller.data.object.spec.requests;
 
     assert.equal(requests.length, 3);
-    assert.equal(requests[0].options.url, 'https://s3.us.cloud-object-storage.appdomain.cloud/bucket/test-config.yaml');
-    assert.equal(requests[1].options.url, 'https://s3.us.cloud-object-storage.appdomain.cloud/bucket/test-config-update.yaml');
-    assert.equal(requests[2].options.url, 'https://s3.us.cloud-object-storage.appdomain.cloud/bucket/test-config-falserec.yaml');
+    for (let i = 0; i < requests.length; i++) {
+      assert.equal(requests[i].options.url, s3Urls[i]);
+      assert.equal(requests[0].splitRequestId, '8ae25a1660f9ea141ecda2b8473a6c1040895840');
 
-    assert.equal(requests[0].splitRequestId, requests[1].splitRequestId);
-    assert.equal(requests[0].splitRequestId, requests[2].splitRequestId);
+    }
   });
 });
