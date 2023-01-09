@@ -31,6 +31,7 @@ describe('#RemoteResource', async function() {
     sinon.stub(request, 'get').callsFake(getFilesStub);
     sinon.stub(BaseDownloadController.prototype, 'added').callsFake(addedStub);
   });
+
   afterEach(function(done) {
     sinon.restore();
     done();
