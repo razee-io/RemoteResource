@@ -88,7 +88,6 @@ describe('#RemoteResource', async function() {
     const factory = new Factory(params);
     const Controller = require(`../src/${factory.controllerString}Controller`);
     const controller = new Controller(params);
-
     return controller;
   }
 
