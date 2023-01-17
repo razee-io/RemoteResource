@@ -42,10 +42,9 @@ describe('#RemoteResource', async function() {
     return;
   }
 
-  let files = [{ name: 'test-config.yaml', download_url: 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config.yaml'},
+  const files = JSON.stringify([{ name: 'test-config.yaml', download_url: 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config.yaml'},
     { name: 'teset-config-1.yaml', download_url: 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-1.yaml'},
-    { name: 'test-config-2.yaml', download_url: 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-2.yaml'}];
-  files = JSON.stringify(files);
+    { name: 'test-config-2.yaml', download_url: 'https://raw.githubusercontent.com/razee-io/RemoteResource/master/test/test-configs/test-config-2.yaml'}]);
 
   const body = {
     ListBucketResult: {
@@ -128,7 +127,7 @@ describe('#RemoteResource', async function() {
               git: {
                 provider: 'github',
                 repo: 'https://github.com/razee-io/RemoteResource.git',
-                ref: 'master',
+                ref: 'main',
                 filePath: 'test/test-configs/test-config.yaml'
               }
             }
@@ -158,7 +157,7 @@ describe('#RemoteResource', async function() {
               git: {
                 provider: 'github',
                 repo: 'https://github.com/razee-io/RemoteResource.git',
-                ref: 'master',
+                ref: 'main',
                 filePath: 'test/test-configs/*.yaml'
               }
             }
@@ -257,7 +256,7 @@ describe('#RemoteResource', async function() {
   it('RRGitController single file request', async function() {
     // RRGitController added() should correctly assemble request option 
     nock('https://api.github.com')
-      .get('/repos/razee-io/RemoteResource/contents/test/test-configs?ref=master')
+      .get('/repos/razee-io/RemoteResource/contents/test/test-configs?ref=main')
       .reply(200, files);
 
     const controller = setupController(eventDataGit);
@@ -273,7 +272,7 @@ describe('#RemoteResource', async function() {
   it('RRGitController get files error', async function() {
     // RRGitController should error if files not found
     nock('https://api.github.com')
-      .get('/repos/razee-io/RemoteResource/contents/test/test-configs?ref=master')
+      .get('/repos/razee-io/RemoteResource/contents/test/test-configs?ref=main')
       .reply(404, 'file not found');
     try {
       const controller = setupController(eventDataGit);
@@ -288,7 +287,7 @@ describe('#RemoteResource', async function() {
   it('RRGitController multiple files request', async function() {
     // RRGitController added() should correctly assemble request options for multiple files
     nock('https://api.github.com')
-      .get('/repos/razee-io/RemoteResource/contents/test/test-configs?ref=master')
+      .get('/repos/razee-io/RemoteResource/contents/test/test-configs?ref=main')
       .reply(200, files);
 
     const controller = setupController(eventDataGit1);
