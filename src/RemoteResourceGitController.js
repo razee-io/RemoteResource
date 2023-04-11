@@ -16,7 +16,7 @@
 
 const loggerFactory = require('./bunyan-api');
 const objectPath = require('object-path');
-const request = require('request-promise-native');
+const RequestLib = require('@razee/request-util');
 const clone = require('clone');
 const hash = require('object-hash');
 
@@ -37,7 +37,7 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
     opt.simple = false;
     opt.resolveWithFullResponse = true;
 
-    return await request(opt);
+    return await RequestLib.doRequest(opt, this.log);
   }
 
   // ============ Git Specific Syntax ============
@@ -68,7 +68,7 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
         const git = new Git(reqOpt);
         reqOpt = git.getAuthHeaders(reqOpt);
         try {
-          let files = await request.get(git.getReqUrl(), { headers: reqOpt.headers });
+          let files = await RequestLib.doRequest({ method: 'get', uri: git.getReqUrl(), headers: reqOpt.headers }, this.log);
           files = JSON.parse(files);
           files = git.getFileArray(files);
           for (let j = 0; j < files.length; j++) {

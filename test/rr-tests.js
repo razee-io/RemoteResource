@@ -280,7 +280,7 @@ describe('#RemoteResource', async function() {
       await controller.added();
       assert.fail('should have thrown an error');
     } catch (e) {
-      assert.equal(e, '404 - "file not found"');
+      assert.include(e, '404');
     }
   });
 

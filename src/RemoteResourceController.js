@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const request = require('request-promise-native');
+const RequestLib = require('@razee/request-util');
 const clone = require('clone');
 
 const { BaseDownloadController } = require('@razee/razeedeploy-core');
@@ -32,7 +32,7 @@ module.exports = class RemoteResourceController extends BaseDownloadController {
     opt.simple = false;
     opt.resolveWithFullResponse = true;
 
-    return await request(opt);
+    return await RequestLib.doRequest(opt, this.log);
   }
 
 
