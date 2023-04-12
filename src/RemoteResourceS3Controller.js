@@ -15,7 +15,7 @@
  */
 
 const objectPath = require('object-path');
-const request = require('request-promise-native');
+const RequestLib = require('@razee/request-util');
 const hash = require('object-hash');
 const axios = require('axios');
 const merge = require('deepmerge');
@@ -73,7 +73,7 @@ module.exports = class RemoteResourceS3Controller extends BaseDownloadController
     opt.simple = false;
     opt.resolveWithFullResponse = true;
 
-    return await request(opt);
+    return await RequestLib.doRequest(opt, this.log);
   }
 
   // ============ Bucket Specific Syntax ============
