@@ -66,6 +66,7 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
 
         const Git = require(`./git/${gitinfo.provider}`);
         const git = new Git(reqOpt);
+        delete reqOpt.git;
         reqOpt = git.getAuthHeaders(reqOpt);
         try {
           let files = await RequestLib.doRequest({ method: 'get', uri: git.getReqUrl(), headers: reqOpt.headers }, this.log);
