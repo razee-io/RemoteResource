@@ -37,6 +37,8 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
     opt.simple = false;
     opt.resolveWithFullResponse = true;
 
+    delete opt.git; // `git` is not an expected request option
+
     return await RequestLib.doRequest(opt, this.log);
   }
 
