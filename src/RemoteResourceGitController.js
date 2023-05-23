@@ -132,5 +132,5 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
     }
   }
 
-  // ============ =================== ============g
+  // ============ =================== ============
 };
