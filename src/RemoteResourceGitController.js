@@ -39,7 +39,16 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
 
     delete opt.git; // `git` is not an expected request option
 
-    return await RequestLib.doRequest(opt, this.log);
+    this.log.info( `RemoteResourceGitController downloading ${opt.uri||opt.url}` );
+    try {
+      const retVal = await RequestLib.doRequest(opt, this.log);
+      this.log.info( `RemoteResourceGitController download of ${opt.uri||opt.url} complete, status: ${retVal?.response?.statusCode}` );
+      return retVal;
+    }
+    catch( e ) {
+      this.log.warn( e, `RemoteResourceGitController error downloading ${opt.uri||opt.url}` );
+      throw e;
+    }
   }
 
   // ============ Git Specific Syntax ============
@@ -91,7 +100,22 @@ module.exports = class RemoteResourceGitController extends BaseDownloadControlle
             this.log.debug(`skipping download for ${gitinfo.repo}`);
             continue;
           } else {
-            return Promise.reject(e.message);
+            let errMessage = `Error retrieving ${git.getReqUrl()}, ${e.statusCode} -- ${e.message}`;
+
+            // Get details from the response if possible
+            if( e.content ) {
+              try {
+                const contentObj = JSON.parse( e.content );
+                for( const prop of Object.getOwnPropertyNames( contentObj ) ) {
+                  errMessage += `, ${prop}: ${contentObj[prop]}`;
+                }
+              }
+              catch(e) {
+                errMessage += `, ${e.content}`;
+              }
+            }
+
+            return Promise.reject(errMessage);
           }
         }
       } else {
