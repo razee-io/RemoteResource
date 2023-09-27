@@ -6,6 +6,11 @@ node_js:
 services:
   - docker
 
+env:
+  global:
+    # The ipv4first option is needed to address node18 build issues on s390x
+    - NODE_OPTIONS="--dns-result-order=ipv4first"
+
 before_install:
   - echo "$DOCKERHUB_TOKEN" | docker login -u "icdevops" --password-stdin
 
