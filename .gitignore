@@ -64,3 +64,6 @@ typings/
 dev/
 download-cache/
 .npmrc
+
+# MEND unified agent
+wss-unified-agent.jar
