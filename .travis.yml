@@ -58,8 +58,8 @@ jobs:
        - docker images
        - ./build/process-template.sh kubernetes/RemoteResource/resource.yaml >/tmp/resource.yaml
        - sudo chmod -t /tmp
-       - ls -lR /tmp
-       - kubelint /tmp
+      #  - ls -lR /tmp
+       - kubelint /tmp/resource.yaml
        - sudo chmod +t /tmp
 
      before_deploy:
