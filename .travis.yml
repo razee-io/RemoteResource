@@ -57,8 +57,10 @@ jobs:
        - if [ -n "${TRAVIS_TAG}" ]; then docker tag quay.io/razee/remoteresource:${TRAVIS_COMMIT}-amd64 quay.io/razee/remoteresource:${TRAVIS_TAG}-amd64; fi
        - docker images
        - ./build/process-template.sh kubernetes/RemoteResource/resource.yaml >/tmp/resource.yaml
+       - sudo chmod -t /tmp
        - ls -lR /tmp
        - kubelint /tmp
+       - sudo chmod +t /tmp
 
      before_deploy:
        - docker login -u="${QUAY_ID}" -p="${QUAY_TOKEN}" quay.io
