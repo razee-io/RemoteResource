@@ -1,3 +1,4 @@
+#!/bin/bash
 kubelint() {
   DEPLOYMENT_DIR="${1}"
   KUBELINT_CONFIG="${2}"
