@@ -6,6 +6,55 @@
 RemoteResource is the foundation for implementing continuous deployment with
 razeedeploy. It retrieves and applies the configuration for all resources.
 
+> **⚠️ DEPRECATION NOTICE**
+>
+> This project is deprecated and is no longer actively maintained.
+> The razee.io components are no longer being developed or supported.
+>
+> ## Alternatives
+>
+> **For IBM Cloud users:**
+>
+> - [IBM Cloud Continuous Delivery](https://www.ibm.com/products/continuous-delivery)
+>
+> **For open source users:**
+>
+> - [Argo CD](https://argo-cd.readthedocs.io/en/stable/)
+> - [Flux CD](https://fluxcd.io/)
+> - [Tekton](https://tekton.dev/)
+
+## Building from Source
+
+If you need to build the container images yourself, follow these instructions:
+
+### Prerequisites
+
+- Docker or Podman installed
+- Access to a container registry (Docker Hub, Quay.io, etc.)
+
+### Build Instructions
+
+1. Clone the repository:
+
+   ```bash
+   git clone <repository-url>
+   cd RemoteResource
+   ```
+
+2. Build the container image:
+
+   ```bash
+   docker build -t <your-registry>/remoteresource:<tag> .
+   ```
+
+3. Push the image to your registry:
+
+   ```bash
+   docker push <your-registry>/remoteresource:<tag>
+   ```
+
+4. Update your Kubernetes manifests to use your custom image.
+
 ## Install
 
 [Razee Deploy Delta](https://github.com/razee-io/razeedeploy-delta) is the
@@ -163,7 +212,7 @@ options:
     uri:
       type: string
       format: uri
-    git: 
+    git:
       type: object
       required: [provider, repo, branch, filePath]
       properties:
@@ -172,7 +221,7 @@ options:
           enum: [github, gitlab]
         repo:
           type: string
-        branch: 
+        branch:
           type: string
         filePath:
           type: string
@@ -355,5 +404,5 @@ data:
 before enabling cluster-wide impersonation. If ImpersonationWebhook is not installed
 before enabling impersonation, any user on the cluster that is allowed to create
 razeedeploy resources will be able to impersonate any other user. Once the ImpersonationWebhook
-controller is installed and all necessary config and authorizations in place, impersonation
-can be safely enabled in the `razeedeploy-config` configmap.
+controller is installed and all necessary config and authorizations are in place,
+impersonation can be safely enabled in the `razeedeploy-config` configmap.
