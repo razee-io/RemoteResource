@@ -63,6 +63,7 @@ module.exports = class RemoteResourceS3Controller extends BaseDownloadController
       let { accessKeyId, secretAccessKey } = await this._fetchHmacSecrets(hmac);
       objectPath.set(options, 'aws.key', accessKeyId);
       objectPath.set(options, 'aws.secret', secretAccessKey);
+      objectPath.set(options, 'aws.sign_version', 4);
     } else if (iam) {
       let bearerToken = await this._fetchS3Token(iam);
       objectPath.set(options, 'headers.Authorization', `bearer ${bearerToken}`);
